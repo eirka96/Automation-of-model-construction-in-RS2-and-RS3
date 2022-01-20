@@ -1,0 +1,16 @@
+
+import pandas as pd
+
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+# pd.set_option('display.max_colwidth', -1)
+
+data = pd.read_clipboard()
+print(data.index.values[1])
+print(data)
+print(data.columns.values[0])
+print(data['Total'][161])
+print(data[data.columns.values[1]][data.index.values[1]])
+print(data[data.columns.values[1]][1])
+print(data.shape[0])

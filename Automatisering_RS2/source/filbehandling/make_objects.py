@@ -3,9 +3,12 @@ import numpy as np
 import shutil as st
 import os
 import re
+import zipfile
+import pathlib
 
 from colorama import Fore
 from colorama import Style
+
 
 
 pd.set_option('display.max_rows', None)
@@ -91,12 +94,10 @@ def make_folder_name(geometri = 'S'):
 def delete_and_create_folders(storage_path):
     storage_path = alternate_slash([storage_path])[0]
     folder_names = make_folder_name()
-    folder_paths, excel_folder_paths, rs2_folder_paths = folder_names, folder_names, folder_names
+    folder_paths = folder_names
 
     for i in range(len(folder_names)):
         folder_paths[i] = (storage_path+'/'+folder_names[i]+'/')
-        # excel_folder_paths[i] = (storage_path + '/' + folder_names[i] + '/excel/')
-        # rs2_folder_paths[i] = (storage_path + '/' + folder_names[i] + '/rs2/')
 
     while True:
         try:
@@ -249,7 +250,6 @@ def alternate_slash(list_path):
 # returnerer:
 # navnet til mappene og dataframe med filplasseringene, samt dataframe med filnavnene.
 
-
 def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
     path_file0_rs2 = alternate_slash([path_file0_rs2])[0]  # alternate_slash kun laget for å funke på lister
     name_rs2_folders, name_csv_folders = get_name_folders(path_storage_files)
@@ -273,8 +273,18 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
             if df_name_rs2_files[rs2][file] is not None and df_name_csv_files[csv][file] is not None:
                 df_list_path_rs2.loc[file, rs2] = (path_storage_files+'/'+rs2+df_name_rs2_files[rs2][file])
                 df_list_path_csv.loc[file, csv] = (path_storage_files + '/' + csv + df_name_csv_files[csv][file])
+                print(df_list_path_rs2[rs2][file])
                 st.copyfile(path_file0_rs2, df_list_path_rs2[rs2][file])
                 pd.DataFrame({}).to_csv(df_list_path_csv[csv][file])
+                path_feaFileMap = df_list_path_rs2[rs2][file].replace(".fez", '')
+                with zipfile.ZipFile(df_list_path_rs2[rs2][file], "r") as zip_ref:  # unzipping the .fez file
+                    zip_ref.extractall(path_feaFileMap)
+                for filename in os.listdir(path_feaFileMap):
+                    extension = pathlib.Path(filename).suffix
+                    print(extension)
+                    source = path_feaFileMap+'/'+filename
+                    destination = path_feaFileMap+'/'+df_name_rs2_files[rs2][file].replace(".fez", '')+extension
+                    os.rename(source, destination)
             else:
                 continue
     return df_list_path_rs2, df_list_path_csv

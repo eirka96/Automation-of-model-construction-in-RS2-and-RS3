@@ -52,8 +52,7 @@ if command == 'j':
                        r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od500" \
                        r"\S_bm80_ss1_k1_od500_v0_m2_mal.fez "
     # sti_til_mappe_for_lagring_av_stier:
-    # er stien til der hvor alle kopier av kildefilene skal lagres i et praktisk
-    # mappesystem.
+    # er stien til der hvor alle kopier av kildefilene skal lagres i et mappesystem.
     sti_til_mappe_for_arbeidsfiler = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone" \
                                      r"\parameterstudie\Mine " \
                                      r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler "
@@ -126,7 +125,7 @@ if command == 'j':
 
     path_fil_rs2 = df_stier_rs2filer[mappenavn_til_rs2[1]][1]
     path_fil_csv = df_stier_csvfiler[mappenavn_til_csv[1]][1]
-    print(path_fil_csv)
+
     path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
     path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
     Popen([path_RS2, path_fil_rs2])

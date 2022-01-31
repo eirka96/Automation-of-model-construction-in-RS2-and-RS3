@@ -1,16 +1,13 @@
+import source.filbehandling.make_objects as mo
+import zipfile
+c = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2\S_bm80_ss1_k1_od100_m2_v10_y0_x0.fez "
+print(c)
+c = mo.alternate_slash([c])[0]
+zipdata = zipfile.ZipFile(c)
+zipinfos = zipdata.infolist()
 
-import pandas as pd
-
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-# pd.set_option('display.max_colwidth', -1)
-
-data = pd.read_clipboard()
-print(data.index.values[1])
-print(data)
-print(data.columns.values[0])
-print(data['Total'][161])
-print(data[data.columns.values[1]][data.index.values[1]])
-print(data[data.columns.values[1]][1])
-print(data.shape[0])
+# iterate through each file
+for zipinfo in zipinfos:
+    # This will do the renaming
+    zipinfo.filename = 'S_bm80_ss1_k1_od100_m2_v10_y0_x0'
+    zipdata.extract(zipinfo)

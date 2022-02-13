@@ -1,4 +1,6 @@
 import pyautogui as pag
+import numpy as np
+import re
 
 
 time_list = [0, 0.5, 1, 2, 5]
@@ -31,6 +33,57 @@ def rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_stikatego
     pag.press('enter', interval=time[2])  # utføre handling
     pag.press('enter', interval=time[2])  # fjerne eventuell melding om at ingenting har skjedd
     return i
+
+
+def change_geometry(path_of_RS2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, j):
+    vinkel = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['v']
+    forflytning_x = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['x']
+    forflytning_y = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['y']
+    mektighet = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['m']
+
+    x_lim = [-150, 150]
+    y_lim = [-150, 150]
+
+    with open(path_of_RS2_file, 'r') as file:
+        # read a list of lines into data
+        data = file.readlines()
+    # mektighet, legges til før forflytning og rotasjon, og endrer kun y-verdi siden sonen i utgangspunktet er horisontal
+    y_topp = mektighet / 2
+    y_bunn = -mektighet / 2
+    x_venstre, x_hoyre = 0, 0
+    # indre grense
+    # forflytning i x-retning gitt forflytning i y-retning, indre grense
+    if y_topp < 5:
+        x_venstre = -np.sqrt(5 ** 2 - y_topp ** 2)
+        x_hoyre = np.sqrt(5 ** 2 - y_topp ** 2)
+    # forflytning i y-retning gitt forflytning i x-retning, indre grense
+
+# tilordne endrede verdier for beskrivelse av grenser
+# nedre grense
+
+    data[46284] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_bunn), data[46284])
+
+    data[46285] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 ' + str(x_venstre) + ',', data[46285])
+    data[46285] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_bunn), data[46285])
+
+    data[46286] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 ' + str(x_hoyre) + ',', data[46286])
+    data[46286] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1' + str(y_bunn), data[46286])
+
+    data[46287] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1' + str(y_bunn), data[46287])
+# øvre grense
+
+    data[46311] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_topp), data[46311])
+
+    data[46312] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 ' + str(x_hoyre) + ',', data[46312])
+    data[46312] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_topp), data[46312])
+
+    data[46313] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 ' + str(x_venstre) + ',', data[46313])
+    data[46313] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_topp), data[46313])
+
+    data[46314] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 ' + str(y_topp), data[46314])
+    # and write everything back
+    with open(path_of_RS2_file, 'w') as file:
+        file.writelines(data)
 
 
 def forflytning_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_stikategori, j, df_koordinates_mouse, name_col_df, i=0, time=None):

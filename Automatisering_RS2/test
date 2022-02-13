@@ -1,13 +1,208 @@
 import source.filbehandling.make_objects as mo
-import zipfile
-c = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2\S_bm80_ss1_k1_od100_m2_v10_y0_x0.fez "
-print(c)
-c = mo.alternate_slash([c])[0]
-zipdata = zipfile.ZipFile(c)
-zipinfos = zipdata.infolist()
+import numpy as np
+import re
 
-# iterate through each file
-for zipinfo in zipinfos:
-    # This will do the renaming
-    zipinfo.filename = 'S_bm80_ss1_k1_od100_m2_v10_y0_x0'
-    zipdata.extract(zipinfo)
+vinkel = 45
+forflytning_x = 2
+forflytning_y = 2
+mektighet = 8
+
+x_lim = [-150, 150]
+y_lim = [-150, 150]
+
+path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea"
+path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
+
+with open(path_of_RS2_file, 'r') as file:
+    # read a list of lines into data
+    data = file.readlines()
+index_materialMesh = data.index("materials mesh start:\n")+4
+index_boundary1 = data.index("  boundary 1 start:\n")+6
+index_boundary2 = data.index("  boundary 2 start:\n")+6
+index_boundary3 = data.index("  boundary 3 start:\n")+6
+index_boundary4 = data.index("  boundary 4 start:\n")+6
+
+points_tunnel_boundary = data[45753:45913].copy()
+# making list of tupples cons
+for index, points in enumerate(points_tunnel_boundary):
+    data[index_boundary1+index] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\1 ' + str(index)+':', data[index_boundary1+index])
+    points_string = re.findall(r"[-+]?(?:\d*\.\d+|\d+\b(?!:))", points)
+    points = (float(points_string[0]), float(points_string[1]))
+    points_tunnel_boundary[index] = points
+
+fourth_quad = points_tunnel_boundary[0:40]
+first_quad = points_tunnel_boundary[40:80]
+second_quad = points_tunnel_boundary[80:120]
+third_quad = points_tunnel_boundary[120:160]
+
+# mektighet, legges til før forflytning og rotasjon, og endrer kun y-verdi siden sonen i utgangspunktet er horisontal
+
+x_venstre = -np.sqrt(5 ** 2 - (mektighet/2) ** 2) + forflytning_x
+x_hoyre = np.sqrt(5 ** 2 - (mektighet/2) ** 2) + forflytning_x
+y_topp = mektighet/2 + forflytning_y
+y_bunn = -mektighet/2 + forflytning_y
+
+theta = np.deg2rad(vinkel)
+rot_matr = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+punkt_bunn_hoyre = np.dot(rot_matr, np.array([x_hoyre, y_bunn]))
+punkt_topp_hoyre = np.dot(rot_matr, np.array([x_hoyre, y_topp]))
+punkt_topp_venstre = np.dot(rot_matr, np.array([x_venstre, y_topp]))
+punkt_bunn_venstre = np.dot(rot_matr, np.array([x_venstre, y_bunn]))
+
+#ytre grense:
+def find_points_on_outer_boundary(point_r, point_l):
+    point_r = np.array(point_r)
+    point_l = np.array(point_l)
+    test = [150, -150]
+    a = (point_r[1] - point_l[1])/(point_r[0] - point_l[0])
+    b = point_r[1]-a*point_r[0]
+    Y = []
+    X = []
+    point = []
+    # finder hvilken begrensning som gjelder for de to punkter som beskriver linja og lagrer den ferdige beskrivelsen i en vector
+    for i in range(2):
+        y = a * test[i] + b
+        x = (test[i]-b)/a
+        if abs(y) <= 150:
+            Y.append(y)
+        if abs(x) <= 150:
+            X.append(x)
+    for x in X:
+        y = a * x + b
+        point.append(np.array([x, y]))
+    for y in Y:
+        x = (y-b)/a
+        point.append(np.array([x, y]))
+# sørger for at det endrede punkt til høyre er lagret i første element av vektoren
+    v = np.sqrt(np.linalg.norm(point[0]-point_r).dot(np.linalg.norm(point[0]-point_r)))
+    v2 = min(np.sqrt(np.linalg.norm(point[0]-point_r).dot(np.linalg.norm(point[0]-point_r))), np.sqrt(np.linalg.norm(point[1]-point_r).dot(np.linalg.norm(point[1]-point_r))))
+    if v != v2:
+        point = [point[1], point[0]]
+    return point[0], point[1]
+
+
+ytre_topp_hoyre, ytre_topp_venstre = find_points_on_outer_boundary(punkt_topp_hoyre, punkt_topp_venstre)
+ytre_bunn_hoyre, ytre_bunn_venstre = find_points_on_outer_boundary(punkt_bunn_hoyre, punkt_bunn_venstre)
+# indre grense
+
+
+def find_point_on_circular_boundary(index_lowest_diff, nth_quad, nth_point_y):
+    a = (nth_quad[index_lowest_diff[1]][1] - nth_quad[index_lowest_diff[0]][1])/(nth_quad[index_lowest_diff[1]][0] - nth_quad[index_lowest_diff[0]][0])
+    b = nth_quad[index_lowest_diff[1]][1]-a*nth_quad[index_lowest_diff[1]][0]
+    nth_point_x = (nth_point_y-b)/a
+    point = (nth_point_x, nth_point_y)
+    # base = np.array([nth_quad[index_lowest_diff[1]][0] - nth_quad[index_lowest_diff[0]][0], nth_quad[index_lowest_diff[1]][1] - nth_quad[index_lowest_diff[0]][1]])
+    # roof = np.array([nth_point[0] - nth_quad[index_lowest_diff[0]][0], nth_point[1] - nth_quad[index_lowest_diff[0]][1]])
+    # u = (np.dot(base, roof)/np.dot(base, base))*base
+    # point = (nth_quad[index_lowest_diff[0]][0]+u[0], nth_quad[index_lowest_diff[0]][1]+u[1])
+    return point
+
+
+if y_topp < 5:
+
+    diff_4th = [abs(np.sqrt((x_hoyre - float(point[0])) ** 2 + (y_bunn - float(point[1])) ** 2)) for point in
+                fourth_quad]
+    diff_1st = [abs(np.sqrt((x_hoyre - float(point[0])) ** 2 + (y_topp - float(point[1])) ** 2)) for point in
+                first_quad]
+    diff_2nd = [abs(np.sqrt((x_venstre - float(point[0])) ** 2 + (y_topp - float(point[1])) ** 2)) for point in
+                second_quad]
+    diff_3rd = [abs(np.sqrt((x_venstre - float(point[0])) ** 2 + (y_bunn - float(point[1])) ** 2)) for point in
+                third_quad]
+
+    sorted_diff_4th = sorted(diff_4th)
+    sorted_diff_1st = sorted(diff_1st)
+    sorted_diff_2nd = sorted(diff_2nd)
+    sorted_diff_3rd = sorted(diff_3rd)
+    index_lowest_diff_4th = (diff_4th.index(sorted_diff_4th[1]), diff_4th.index(sorted_diff_4th[0]))
+    index_lowest_diff_1st = (diff_1st.index(sorted_diff_1st[1]), diff_1st.index(sorted_diff_1st[0]))
+    index_lowest_diff_2nd = (diff_2nd.index(sorted_diff_2nd[1]), diff_2nd.index(sorted_diff_2nd[0]))
+    index_lowest_diff_3rd = (diff_3rd.index(sorted_diff_3rd[1]), diff_3rd.index(sorted_diff_3rd[0]))
+    print(index_lowest_diff_4th, index_lowest_diff_1st, index_lowest_diff_2nd, index_lowest_diff_3rd)
+
+    point_4th = find_point_on_circular_boundary(index_lowest_diff_4th, fourth_quad, y_bunn)
+    point_1st = find_point_on_circular_boundary(index_lowest_diff_1st, first_quad, y_topp)
+    point_2nd = find_point_on_circular_boundary(index_lowest_diff_2nd, second_quad, y_topp)
+    point_3rd = find_point_on_circular_boundary(index_lowest_diff_3rd, third_quad, y_bunn)
+    print(point_4th, point_3rd, point_2nd, point_1st)
+
+
+
+# endre materials mesh i kildekoden til RS2, element 1
+data[index_materialMesh+9] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_materialMesh+9])
+data[index_materialMesh+9] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_materialMesh+9])[2:]
+data[index_materialMesh+11] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_4th[0])+',', data[index_materialMesh+11])
+data[index_materialMesh+11] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_4th[1]), data[index_materialMesh+11])[2:]
+
+# endre materials mesh i kildekoden til RS2, element 2
+data[index_materialMesh+18] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(ytre_topp_venstre[0]), data[index_materialMesh+18])
+data[index_materialMesh+18] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_venstre[1]), data[index_materialMesh+18])[2:]
+data[index_materialMesh+19] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_venstre[0]), data[index_materialMesh+19])
+data[index_materialMesh+19] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_venstre[1]), data[index_materialMesh+19])[2:]
+
+# endre materials mesh i kildekoden til RS2, element 3
+data[index_materialMesh+27] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_materialMesh+27])
+data[index_materialMesh+27] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_materialMesh+27])[2:]
+data[index_materialMesh+28] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_1st[0])+',', data[index_materialMesh+28])
+data[index_materialMesh+28] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_1st[1]), data[index_materialMesh+28])[2:]
+data[index_materialMesh+29] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_2nd[0])+',', data[index_materialMesh+29])
+data[index_materialMesh+29] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_2nd[1]), data[index_materialMesh+29])[2:]
+
+# endre materials mesh i kildekoden til RS2, element 5
+data[index_materialMesh+45] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_1st[0])+',', data[index_materialMesh+45])
+data[index_materialMesh+45] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_1st[1]), data[index_materialMesh+45])[2:]
+data[index_materialMesh+47] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_2nd[0])+',', data[index_materialMesh+47])
+data[index_materialMesh+47] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_2nd[1]), data[index_materialMesh+47])[2:]
+
+# endre materials mesh i kildekoden til RS2, element 6
+data[index_materialMesh+54] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(ytre_topp_hoyre[0]), data[index_materialMesh+54])[2:]
+data[index_materialMesh+54] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_hoyre[1]), data[index_materialMesh+54])[2:]
+data[index_materialMesh+55] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(ytre_bunn_hoyre[0]), data[index_materialMesh+55])[2:]
+data[index_materialMesh+55] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_hoyre[1]), data[index_materialMesh+55])[2:]
+
+# endre boundary i kildekoden til RS2, element 1
+data[index_boundary1+index_lowest_diff_4th[1]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_4th[0])+',', data[index_boundary1+index_lowest_diff_4th[1]])
+data[index_boundary1+index_lowest_diff_4th[1]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_4th[1]), data[index_boundary1+index_lowest_diff_4th[1]])
+data[index_boundary1+40+index_lowest_diff_1st[1]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_1st[0])+',', data[index_boundary1+40+index_lowest_diff_1st[1]])
+data[index_boundary1+40+index_lowest_diff_1st[1]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_1st[1]), data[index_boundary1+40+index_lowest_diff_1st[1]])
+data[index_boundary1+120+index_lowest_diff_3rd[1]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_boundary1+120+index_lowest_diff_3rd[1]])
+data[index_boundary1+120+index_lowest_diff_3rd[1]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_boundary1+120+index_lowest_diff_3rd[1]])
+data.pop(index_boundary1+121+index_lowest_diff_3rd[1])
+data.insert(index_boundary1+80+index_lowest_diff_2nd[1], "         {}: ".format(index_boundary1+80+index_lowest_diff_2nd[1])+str(point_2nd[0])+', '+str(point_2nd[1])+'\n')
+# rette opp i nummerering av punkter
+for index, points in enumerate(points_tunnel_boundary):
+    data[index_boundary1+index] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\1 ' + str(index)+':', data[index_boundary1+index])[2:]
+
+# endre boundary i kildekoden til RS2, element 2
+data[index_boundary2+2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_hoyre[0]), data[index_boundary2+2])
+data[index_boundary2+2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_hoyre[1]), data[index_boundary2+2])[2:]
+data[index_boundary2+3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_hoyre[0]), data[index_boundary2+3])
+data[index_boundary2+3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_hoyre[1]), data[index_boundary2+3])[2:]
+data[index_boundary2+6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_venstre[0]), data[index_boundary2+6])
+data[index_boundary2+6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_topp_venstre[1]), data[index_boundary2+6])[2:]
+data[index_boundary2+7] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_venstre[0]), data[index_boundary2+7])
+data[index_boundary2+7] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(ytre_bunn_venstre[1]), data[index_boundary2+7])[2:]
+
+# endre boundary i kildekoden til RS2, element 3
+data[index_boundary3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(y_bunn), data[index_boundary3])[2:]
+
+data[index_boundary3+1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_boundary3+1])[2:]
+data[index_boundary3+1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_boundary3+1])[2:]
+
+data[index_boundary3+2] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_4th[0])+',', data[index_boundary3+2])[2:]
+data[index_boundary3+2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_4th[1]), data[index_boundary3+2])[2:]
+
+data[index_boundary3+3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(y_bunn), data[index_boundary3+3])[2:]
+
+
+data[index_boundary4] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(y_topp), data[index_boundary4])[2:]
+
+data[index_boundary4+1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_1st[0])+',', data[index_boundary4+1])[2:]
+data[index_boundary4+1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_1st[1]), data[index_boundary4+1])[2:]
+
+data[index_boundary4+2] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_2nd[0])+',', data[index_boundary4+2])[2:]
+data[index_boundary4+2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_2nd[1]), data[index_boundary4+2])[2:]
+
+data[index_boundary4+3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(y_topp), data[index_boundary4+3])[2:]
+# and write everything back
+with open(path_of_RS2_file, 'w') as file:
+    file.writelines(data)

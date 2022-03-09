@@ -38,7 +38,7 @@ while True:
 
 if command == 'j':
     # hente koordinater fra mus
-    sti_koordinater_mus = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie" \
+    sti_koordinater_mus = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie" \
                           r"\excel\Pycharm_automatisering\liste_datamus_koordinater.csv "
     navn_kol_df_koord_mus = ['Handling', 'x', 'y']
     # df_koordinater_mus = pd.read_csv(sti_koordinater_mus, sep=';')
@@ -48,13 +48,13 @@ if command == 'j':
 
     # sti_kildefil:
     # inneholder stien til kildefilen.
-    sti_kildefil_rs2 = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
+    sti_kildefil_rs2 = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
                        r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od500" \
                        r"\S_bm80_ss1_k1_od500_v0_m2_mal.fez "
     # sti_til_mappe_for_lagring_av_stier:
     # er stien til der hvor alle kopier av kildefilene skal lagres i et praktisk
     # mappesystem.
-    sti_til_mappe_for_arbeidsfiler = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og " \
+    sti_til_mappe_for_arbeidsfiler = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
                                      r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
                                      r"modeller\RS2\tverrsnitt_sirkulær "
     if not path.exists(mo.alternate_slash([sti_til_mappe_for_arbeidsfiler])[0]):
@@ -62,9 +62,9 @@ if command == 'j':
     # sti_csv_gamle_rs2stier og sti_csv_gamle_csvStier:
     # er stien til .csv-fil der stier til kopier fra forrige gjennomkjøring er lagret.
     # Denne brukes hvis man ønsker å slette forrige forsøk.
-    sti_csv_gamle_rs2stier = r'C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone' \
+    sti_csv_gamle_rs2stier = r'C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone' \
                              r'\parameterstudie\excel\Pycharm_automatisering\liste_stier_rs2filer.csv '
-    sti_csv_gamle_csvStier = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone" \
+    sti_csv_gamle_csvStier = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
                              r"\parameterstudie\excel\modellering_svakhetssone_resultater" \
                              r"\sti_csv_gamle_csvStier.csv "
     # df_gamle_rs2filer/csvfiler:

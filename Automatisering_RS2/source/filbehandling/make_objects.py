@@ -44,7 +44,7 @@ pd.set_option('display.width', None)
 
 
 def make_file_name(geometri='S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie" \
+    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie" \
                               r"\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
@@ -72,7 +72,7 @@ def make_file_name(geometri='S'):
 # parameter_verdier_excel har en annen sti og det blir ikke lagt til .fez i enden av navnet.
 
 def make_folder_name(geometri = 'S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10. Prosjekt og masteroppgave\modellering_svakhetssone\parameterstudie" \
+    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie" \
                               r"\excel\Pycharm_automatisering\parameter_verdier_mappenavn.csv "
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()

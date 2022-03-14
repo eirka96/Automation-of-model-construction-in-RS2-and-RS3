@@ -126,51 +126,51 @@ if command == 'j':
     path_fil_rs2 = df_stier_rs2filer[mappenavn_til_rs2[1]][1]
     path_fil_csv = df_stier_csvfiler[mappenavn_til_csv[1]][1]
 
-    path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
-    path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
-    Popen([path_RS2, path_fil_rs2])
-    sleep(10)
-
-    streng_endringer = df_endrede_attributter_rs2filer[mappenavn_til_rs2[1]][1]
-    print(df_koordinater_mus)
-    # pyautogui operasjoner begynner her
-    i = Auto.klargjore_rs2(df_koordinater_mus, l_kol)
-    pag.hotkey('ctrl', 'r', interval=time[0])  # fjerne mesh
-    sleep(1)
-    i = Auto.rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
+    # path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
+    # path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
+    # Popen([path_RS2, path_fil_rs2])
+    # sleep(10)
+    #
+    # streng_endringer = df_endrede_attributter_rs2filer[mappenavn_til_rs2[1]][1]
+    # print(df_koordinater_mus)
+    # # pyautogui operasjoner begynner her
+    # i = Auto.klargjore_rs2(df_koordinater_mus, l_kol)
+    # pag.hotkey('ctrl', 'r', interval=time[0])  # fjerne mesh
     # sleep(1)
-    i = Auto.forflytning_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
+    # i = Auto.rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
     # # sleep(1)
-    i = Auto.skalering_svakhetssone(df_koordinater_mus, l_kol, i)
-    sleep(3)
-    i = Auto.utgraving(df_koordinater_mus, l_kol, i)
+    # i = Auto.forflytning_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
+    # # # sleep(1)
+    # i = Auto.skalering_svakhetssone(df_koordinater_mus, l_kol, i)
+    # sleep(3)
+    # i = Auto.utgraving(df_koordinater_mus, l_kol, i)
+    # # sleep(1)
+    #
+    # # # lage diskretisering og mesh
+    # pag.hotkey('ctrl', 'm', interval=time[1])
     # sleep(1)
-
-    # # lage diskretisering og mesh
-    pag.hotkey('ctrl', 'm', interval=time[1])
-    sleep(1)
-    # # kalkulere
-    pag.hotkey('ctrl', 's', interval=time[2])
-    pag.hotkey('ctrl', 't', interval=time[1])
-    sleep(10)
-
-    # åpne interpret
-    pag.hotkey('ctrl', 'shift', 'i', interval=time[4])
-    sleep(15)
-    Auto.interpret_resultat_til_clipboard(time)
-
-    data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
-    # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-    data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None) # data lagres i respektiv csv
-    pag.hotkey('alt', 'f4', interval=time[3])  # lukke interpret
-
-    # lukke programmet
-    pag.hotkey('ctrl', 's', interval=time[2])
-    pag.hotkey('alt', 'f4', interval=time[1])
-
-
+    # # # kalkulere
+    # pag.hotkey('ctrl', 's', interval=time[2])
+    # pag.hotkey('ctrl', 't', interval=time[1])
+    # sleep(10)
+    #
+    # # åpne interpret
+    # pag.hotkey('ctrl', 'shift', 'i', interval=time[4])
+    # sleep(15)
+    # Auto.interpret_resultat_til_clipboard(time)
+    #
     # data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
-    #                             # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-    # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None)
+    # # Logg - Mastergradsoppgave_Modellering, 10.08.2021
+    # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None) # data lagres i respektiv csv
+    # pag.hotkey('alt', 'f4', interval=time[3])  # lukke interpret
+    #
+    # # lukke programmet
+    # pag.hotkey('ctrl', 's', interval=time[2])
+    # pag.hotkey('alt', 'f4', interval=time[1])
+    #
+    #
+    # # data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
+    # #                             # Logg - Mastergradsoppgave_Modellering, 10.08.2021
+    # # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None)
 
 

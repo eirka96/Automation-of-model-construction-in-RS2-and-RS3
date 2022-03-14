@@ -4,24 +4,31 @@ import re
 import matplotlib.path as mpltPath
 
 # mellom 45 +- 8.1302+++->, vinkel der ting føkkes opp
-vinkel = -101
+vinkel = -90
 x = 150
 forflytning_x = 0
 forflytning_y = 0
-mektighet = 4
-if not -1 < vinkel / 360 < 1:
-    if vinkel % 360 != 0:
-        vinkel = vinkel % 360
-    else:
-        vinkel = vinkel / 360
+mektighet = 8
 
+
+def prepare_angel(angel):
+    if not -1 < angel / 360 < 1:
+        if angel % 360 != 0:
+            angel = angel % 360
+        else:
+            angel = angel / 360
+    if 89.99999 < angel < 90.00001 or -89.99999 > angel > -90.00001:
+        angel = 89.99999
+    elif 269.99999 < angel < 270.00001 or -269.99999 > angel > -270.00001:
+        angel = 269.99999
+    return angel
+
+
+vinkel = prepare_angel(vinkel)
 ant_pkt_ytre = 4
 diameter = 10
 n_points_boundary = 364
 ant_linjer = 2
-
-x_lim = [-150, 150]
-y_lim = [-150, 150]
 
 path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
@@ -75,8 +82,8 @@ def find_points_on_outer_boundary(point_r, point_l):
     a = (point_r[1] - point_l[1]) / (point_r[0] - point_l[0])
     b = point_r[1] - a * point_r[0]
     point = []
-    # finder hvilken begrensning som gjelder for de to punkter som beskriver linja og lagrer den ferdige beskrivelsen i en vector
-    for i in range(2):
+    # finder hvilken begrænsning som gjelder for de to punkter som bæskriver linja og lagrer den ferdige beskrivelsen i en vector
+    for i in range(ant_linjer):
         y = a * test[i] + b
         x = (test[i] - b) / a
         if abs(y) <= 150:
@@ -106,12 +113,12 @@ print(punkter_ytre)
 
 
 # indre grense
-class inner_boundary:
+class InnerBoundary:
     # inner boundary er en class der hensikten er å tilordne korrekt plassering for de indre punktene som beskriver
     # svakhetssonen i rs2. Dette skal kun inntreffe hvis sonen treffer tunnelen. Med andre ord, denne classen må ta
     # høyde for situasjon der enten 0, 1, 2 etc. linjeelement treffer tunnelåpningen.
     def __init__(self, ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
-                 diameter, vinkel):
+                 diameter, vinkel, points_tunnel_boundary):
         self.nth_quad = nth_quad
         self.punkter_ytre = punkter_ytre.copy()
         self.data = data
@@ -120,8 +127,24 @@ class inner_boundary:
         self.ant_linjer = ant_linjer
         self.diameter = diameter
         self.vinkel = vinkel
+        self.points_tunnel_boundary = points_tunnel_boundary.copy()
+        path = mpltPath.Path(points_tunnel_boundary)
+        inside = path.contains_points(self.get_middle_points())
+        if any(inside):
+            self.inner_points = True
+        else:
+            self.inner_points = False
 
-    def which_quad(self, punkt):
+    def get_middle_points(self):
+        p = []
+        for i in range(self.ant_linjer):
+            k = [3, 1]
+            p.append(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
+                      (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
+        return p
+
+    @staticmethod
+    def which_quad(punkt):
         if punkt[0] > 0 and punkt[1] >= 0:
             return '1st quad'
         elif punkt[0] <= 0 and punkt[1] > 0:
@@ -140,9 +163,10 @@ class inner_boundary:
             '2nd quad': 2,
             '3rd quad': 3,
         }
-        return switcher.get(inner_boundary.which_quad(self, punkt), None)
+        return switcher.get(self.which_quad(punkt), None)
 
-    def which_outer_boundary_point(self, element):
+    @staticmethod
+    def which_outer_boundary_point(element):
         if element == 0 or element == 3:
             return 'nedre grense'
         elif element == 1 or element == 2:
@@ -155,7 +179,7 @@ class inner_boundary:
             'nedre grense': (0, 3),
             'ovre grense': (1, 2),
         }
-        index_point = switcher.get(inner_boundary.which_outer_boundary_point(self, element), None)
+        index_point = switcher.get(self.which_outer_boundary_point(element), None)
         return index_point
 
     def get_index_lowest_diff_points(self, quad_index, punkt):
@@ -167,7 +191,7 @@ class inner_boundary:
         return index_lowest_diff
 
     def get_linfunc_outer_boundary(self, element):
-        indices_points_outer_boundary = inner_boundary.get_indices_outer_boundary(self, element)
+        indices_points_outer_boundary = self.get_indices_outer_boundary(element)
         a_line = (self.punkter_ytre[indices_points_outer_boundary[0]][1] -
                   self.punkter_ytre[indices_points_outer_boundary[1]][1]) / (
                          self.punkter_ytre[indices_points_outer_boundary[0]][0] -
@@ -181,23 +205,21 @@ class inner_boundary:
         return a_line, b_line
 
     def calculate_inner_points(self, a_line, b_line):
-        A = a_line ** 2 + 1
-        B = 2 * a_line * b_line
-        C = b_line ** 2 - self.diameter ** 2 / 4
-        x_pos = (-B + np.sqrt(B ** 2 - 4 * A * C)) / (2 * A)
-        x_neg = (-B - np.sqrt(B ** 2 - 4 * A * C)) / (2 * A)
+        a = a_line ** 2 + 1
+        b = 2 * a_line * b_line
+        c = b_line ** 2 - self.diameter ** 2 / 4
+        x_pos = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+        x_neg = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
         y_pos = a_line * x_pos + b_line
         y_neg = a_line * x_neg + b_line
         point_pos = [x_pos, y_pos]
         point_neg = [x_neg, y_neg]
         return point_pos, point_neg
 
-    def get_theoretical_inner_points(self):
-        a_line_nedre, b_line_nedre = self.get_linfunc_outer_boundary(0)
-        point_pos_nedre, point_neg_nedre = self.calculate_inner_points(a_line_nedre, b_line_nedre)
-        a_line_ovre, b_line_ovre = self.get_linfunc_outer_boundary(1)
-        point_pos_ovre, point_neg_ovre = self.calculate_inner_points(a_line_ovre, b_line_ovre)
-        points = [point_pos_nedre, point_pos_ovre, point_neg_ovre, point_neg_nedre]
+    def get_theoretical_inner_points(self, element):
+        a_line_nedre, b_line_nedre = self.get_linfunc_outer_boundary(element)
+        point_pos, point_neg = self.calculate_inner_points(a_line_nedre, b_line_nedre)
+        points = [point_pos, point_neg]
         return points
 
     # def get_points_on_circular_boundary(self):
@@ -228,14 +250,18 @@ class inner_boundary:
     def get_points_on_circular_boundary_2(self):
         points = []
         k = [3, 1]
-        path = mpltPath.Path(points_tunnel_boundary)
-        points_theoretical = self.get_theoretical_inner_points()
+        path = mpltPath.Path(self.points_tunnel_boundary)
         for i in range(self.ant_linjer):
-            inside = path.contains_point([(self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
-                                          (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2])
-            if inside == True:
-                point = inner_boundary.calculate_intersection(self, points_theoretical[i], i)
-                point1 = inner_boundary.calculate_intersection(self, points_theoretical[i + k[i]], i)
+            inside = path.contains_point(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
+                                          (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
+            if inside:
+                points_theoretical = self.get_theoretical_inner_points(i)
+                point = self.calculate_intersection(points_theoretical[0], i)
+                point1 = self.calculate_intersection(points_theoretical[1], i)
+                points.append(point)
+                points.append(point1)
+            else:
+                point, point1 = None, None
                 points.append(point)
                 points.append(point1)
         P = points.copy()
@@ -249,10 +275,11 @@ class inner_boundary:
             '2nd quad': 182,
             '3rd quad': 273,
         }
-        return switcher.get(inner_boundary.which_quad(self, punkt), None)
+        return switcher.get(self.which_quad(punkt), None)
 
     def sort_boundary_points(self):
         points = self.get_points_on_circular_boundary_2()
+        points = [value for value in points if value is not None]
         print('________Hallo________')
         print(points)
         i_data_list = []
@@ -263,7 +290,7 @@ class inner_boundary:
             i_data_list.append(self.index_boundary1 + self.get_start_quad(points[i]) + index_lowest_diff[1])
         i_data_list, points = (list(t) for t in zip(*sorted(zip(i_data_list, points))))
         print(points)
-        self.n_points_ib = self.n_points_ib + 4
+        self.n_points_ib = self.n_points_ib + len(points)
         return i_data_list, points
 
     def set_inner_boundary(self):
@@ -288,14 +315,18 @@ class inner_boundary:
         return
 
 
-ib = inner_boundary(ant_linjer, quad, punkter_ytre, data, n_points_boundary, index_boundary1, diameter, vinkel)
-punkter_indre = ib.get_points_on_circular_boundary_2()
-ib.set_inner_boundary()
-print(punkter_indre)
-point_4th = punkter_indre[0]
-point_1st = punkter_indre[1]
-point_2nd = punkter_indre[2]
-point_3rd = punkter_indre[3]
+ib = InnerBoundary(ant_linjer, quad, punkter_ytre, data, n_points_boundary, index_boundary1, diameter, vinkel,
+                   points_tunnel_boundary)
+if ib.inner_points:
+    punkter_indre = ib.get_points_on_circular_boundary_2()
+    ib.set_inner_boundary()
+    print(punkter_indre)
+    point_4th = punkter_indre[0]
+    point_1st = punkter_indre[1]
+    point_2nd = punkter_indre[2]
+    point_3rd = punkter_indre[3]
+else:
+    punkter_indre = ib.get_points_on_circular_boundary_2()
 
 # endre boundary i kildekoden til RS2, element 1 - tunnelperiferien
 # print(ib.get_quad_index(3))
@@ -312,7 +343,7 @@ index_boundary4 = data.index("  boundary 4 start:\n") + 6
 # endre boundary i kildekoden til RS2, element 2 - ytre grense
 
 
-class outer_boundary:
+class OuterBoundary:
     def __init__(self, punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre):
         self.punkter_ytre = punkter_ytre.copy()
         self.data = data
@@ -341,7 +372,7 @@ class outer_boundary:
             '3rd line': 3,
             '4th line': 4,
         }
-        return switcher.get(outer_boundary.which_line(self, element), None)
+        return switcher.get(OuterBoundary.which_line(self, element), None)
 
     def del_points(self):
         self.data.pop(self.index_boundary2 + 7)
@@ -391,7 +422,8 @@ class outer_boundary:
             else:
                 k = 1
             self.data.insert(placement_new_point[i] + self.index_boundary2,
-                             "        {}: ".format(0) + str(self.punkter_ytre[i][0]) + ', ' + str(self.punkter_ytre[i][1]) + '\n')
+                             "        {}: ".format(0) + str(self.punkter_ytre[i][0]) + ', ' + str(
+                                 self.punkter_ytre[i][1]) + '\n')
             print(placement_new_point)
         for index in range(len(self.data[self.index_boundary2:(self.index_boundary2 + 8)])):
             self.data[self.index_boundary2 + index] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + str(index) + ':',
@@ -399,14 +431,17 @@ class outer_boundary:
         return
 
 
-outer_boundary(punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre)
+OuterBoundary(punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre)
 
 
 # endre boundary (svakhetssone) i kildekoden til RS2, element 3 - bunn
 class BoundaryLines:
-    def __init__(self, punkter_ytre, punkter_indre):
+    def __init__(self, punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data):
+        self.index_boundary3 = index_boundary3
+        self.index_boundary4 = index_boundary4
         self.punkter_ytre = punkter_ytre
         self.punkter_indre = punkter_indre
+        self.data = data
 
     @staticmethod
     def inner_points_cleanup(punkter):
@@ -421,110 +456,159 @@ class BoundaryLines:
                 punkter[1] = x[2]
         return punkter
 
-    def sort_boundary_line(self):
-        over = [self.punkter_ytre[1], self.punkter_indre[1], self.punkter_indre[2], self.punkter_ytre[2]]
-        over = self.inner_points_cleanup(over)
-        under = [self.punkter_ytre[3], self.punkter_indre[3], self.punkter_indre[0], self.punkter_ytre[0]]
-        under = self.inner_points_cleanup(under)
-        return over, under
+    def sort_weakness_points(self):
+        punkter = []
+        p = [3, 1]
+        for i in range(len(p)):
+            punkt = [self.punkter_ytre[i], self.punkter_indre[i], self.punkter_indre[i + p[i]],
+                     self.punkter_ytre[i + p[i]]]
+            if punkt[1] is not None:
+                punkt = self.inner_points_cleanup(punkt)
+            punkter.append(punkt)
+        return punkter
+
+    def set_weakness_points(self):
+        punkter = self.sort_weakness_points()
+        print(punkter)
+        if all(elem is None for elem in self.punkter_indre):
+            self.set_weakness_exl_inner_points()
+        elif all(elem is not None for elem in self.punkter_indre):
+            self.set_weakness_with_inner_points(punkter)
+        else:
+            self.set_weakness_with_inner_point(punkter)
+        return
+
+    def set_weakness_with_inner_points(self, punkter):
+        punkter_under = punkter[0]
+        punkter_over = punkter[1]
+        for i in range(len(punkter_over)):
+            self.data[index_boundary3 + i] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                    r'\g<1>' + str(punkter_under[i][0]) + ',',
+                                                    self.data[index_boundary3 + i])
+            self.data[index_boundary3 + i] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_under[i][1]),
+                                                    self.data[index_boundary3 + i])
+            self.data[index_boundary4 + i] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_over[i][0]) + ',',
+                                                    self.data[index_boundary4 + i])
+            self.data[index_boundary4 + i] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_over[i][1]),
+                                                    self.data[index_boundary4 + i])
+        return
+
+    def set_weakness_with_inner_point(self, punkter):
+        index_boundary = [self.index_boundary4, self.index_boundary3]
+        p = [3, 1]
+        for i in range(len(punkter)):
+            if punkter[i][1] is not None:
+                for j in range(len(punkter[i])):
+                    self.data[index_boundary[i] + i] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                              r'\g<1>' + str(punkter[i][j][0]) + ',',
+                                                              self.data[index_boundary[i] + i])
+                    self.data[index_boundary[i] + i] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                              r'\g<1>' + str(punkter[i][j][1]),
+                                                              self.data[index_boundary[i] + i])
+            else:
+                self.data.pop(index_boundary[i] + 17)
+                self.data.pop(index_boundary[i] + 16)
+                self.data.pop(index_boundary[i] + 2)
+                self.data.pop(index_boundary[i] + 1)
+                data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + '1:',
+                                                     data[index_boundary[i] + 1])
+                data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                     r'\g<1>' + str(self.punkter_ytre[i + p[i]][0]),
+                                                     data[index_boundary[i] + 1])
+                data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                     r'\g<1>' + str(self.punkter_ytre[i + p[i]][1]),
+                                                     data[index_boundary[i] + 1])
+                data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(self.punkter_ytre[i][0]),
+                                                 data[index_boundary[i]])
+                data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(self.punkter_ytre[i][1]),
+                                                 data[index_boundary[i]])
+                data[index_boundary[i] - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + '2',
+                                                     data[index_boundary[i] - 1])
+        return
+
+    def set_weakness_exl_inner_points(self):
+        index_boundary = [self.index_boundary4, self.index_boundary3]
+        p = [3, 1]
+        for i in range(len(index_boundary)):
+            self.data.pop(index_boundary[i] + 17)
+            self.data.pop(index_boundary[i] + 16)
+            self.data.pop(index_boundary[i] + 2)
+            self.data.pop(index_boundary[i] + 1)
+            data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + '1:',
+                                                 data[index_boundary[i] + 1])
+            data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                 r'\g<1>' + str(self.punkter_ytre[i + p[i]][0]) + ',',
+                                                 data[index_boundary[i] + 1])
+            data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                 r'\g<1>' + str(self.punkter_ytre[i + p[i]][1]),
+                                                 data[index_boundary[i] + 1])
+            data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(self.punkter_ytre[i][0]) + ',',
+                                             data[index_boundary[i]])
+            data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(self.punkter_ytre[i][1]),
+                                             data[index_boundary[i]])
+            data[index_boundary[i] - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + '2',
+                                                 data[index_boundary[i] - 1])
+        return
 
 
-bl = BoundaryLines(punkter_ytre, punkter_indre)
-punkter_over, punkter_under = bl.sort_boundary_line()
-data[index_boundary3] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_under[0][0]) + ',',
-                               data[index_boundary3])
-data[index_boundary3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_under[0][1]), data[index_boundary3])
-
-data[index_boundary3 + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_under[1][0]) + ',',
-                                   data[index_boundary3 + 1])
-data[index_boundary3 + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_under[1][1]),
-                                   data[index_boundary3 + 1])
-
-data[index_boundary3 + 2] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_under[2][0]) + ',',
-                                   data[index_boundary3 + 2])
-data[index_boundary3 + 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_under[2][1]),
-                                   data[index_boundary3 + 2])
-
-data[index_boundary3 + 3] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_under[3][0]) + ',',
-                                   data[index_boundary3 + 3])
-data[index_boundary3 + 3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_under[3][1]),
-                                   data[index_boundary3 + 3])
-
-# endre boundary (svakhetssone) i kildekoden til RS2, element 4 - topp
-data[index_boundary4] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_over[0][0]) + ',',
-                               data[index_boundary4])
-data[index_boundary4] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_over[0][1]), data[index_boundary4])
-
-data[index_boundary4 + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_over[1][0]) + ',',
-                                   data[index_boundary4 + 1])
-data[index_boundary4 + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_over[1][1]),
-                                   data[index_boundary4 + 1])
-
-data[index_boundary4 + 2] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_over[2][0]) + ',',
-                                   data[index_boundary4 + 2])
-data[index_boundary4 + 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_over[2][1]),
-                                   data[index_boundary4 + 2])
-
-data[index_boundary4 + 3] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(punkter_over[3][0]) + ',',
-                                   data[index_boundary4 + 3])
-data[index_boundary4 + 3] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(punkter_over[3][1]),
-                                   data[index_boundary4 + 3])
+bl = BoundaryLines(punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data)
+bl.set_weakness_points()
 
 # endre materials mesh i kildekoden til RS2, element 1
-data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
-                                      data[index_materialMesh + 9])
-data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
-                                      data[index_materialMesh + 9])
-# data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_materialMesh+10])
-# data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_materialMesh+10])
-data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_4th[0]) + ',',
-                                       data[index_materialMesh + 11])
-data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_4th[1]),
-                                       data[index_materialMesh + 11])
-
-# endre materials mesh i kildekoden til RS2, element 2
-data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_venstre[0]) + ',',
-                                       data[index_materialMesh + 18])
-data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_venstre[1]),
-                                       data[index_materialMesh + 18])
-data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_venstre[0]) + ',',
-                                       data[index_materialMesh + 19])
-data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_venstre[1]),
-                                       data[index_materialMesh + 19])
-
-# endre materials mesh i kildekoden til RS2, element 3
-data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
-                                       data[index_materialMesh + 27])
-data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
-                                       data[index_materialMesh + 27])
-data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
-                                       data[index_materialMesh + 28])
-data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
-                                       data[index_materialMesh + 28])
-data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
-                                       data[index_materialMesh + 29])
-data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
-                                       data[index_materialMesh + 29])
-
-# endre materials mesh i kildekoden til RS2, element 5
-data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
-                                       data[index_materialMesh + 45])
-data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
-                                       data[index_materialMesh + 45])
-data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
-                                       data[index_materialMesh + 47])
-data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
-                                       data[index_materialMesh + 47])
-
-# endre materials mesh i kildekoden til RS2, element 6
-data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_hoyre[0]) + ',',
-                                       data[index_materialMesh + 54])
-data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_hoyre[1]),
-                                       data[index_materialMesh + 54])
-data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_hoyre[0]) + ',',
-                                       data[index_materialMesh + 55])
-data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_hoyre[1]),
-                                       data[index_materialMesh + 55])
+# data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
+#                                       data[index_materialMesh + 9])
+# data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
+#                                       data[index_materialMesh + 9])
+# # data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_materialMesh+10])
+# # data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_materialMesh+10])
+# data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_4th[0]) + ',',
+#                                        data[index_materialMesh + 11])
+# data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_4th[1]),
+#                                        data[index_materialMesh + 11])
+#
+# # endre materials mesh i kildekoden til RS2, element 2
+# data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_venstre[0]) + ',',
+#                                        data[index_materialMesh + 18])
+# data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_venstre[1]),
+#                                        data[index_materialMesh + 18])
+# data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_venstre[0]) + ',',
+#                                        data[index_materialMesh + 19])
+# data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_venstre[1]),
+#                                        data[index_materialMesh + 19])
+#
+# # endre materials mesh i kildekoden til RS2, element 3
+# data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
+#                                        data[index_materialMesh + 27])
+# data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
+#                                        data[index_materialMesh + 27])
+# data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
+#                                        data[index_materialMesh + 28])
+# data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
+#                                        data[index_materialMesh + 28])
+# data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
+#                                        data[index_materialMesh + 29])
+# data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
+#                                        data[index_materialMesh + 29])
+#
+# # endre materials mesh i kildekoden til RS2, element 5
+# data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
+#                                        data[index_materialMesh + 45])
+# data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
+#                                        data[index_materialMesh + 45])
+# data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
+#                                        data[index_materialMesh + 47])
+# data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
+#                                        data[index_materialMesh + 47])
+#
+# # endre materials mesh i kildekoden til RS2, element 6
+# data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_hoyre[0]) + ',',
+#                                        data[index_materialMesh + 54])
+# data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_hoyre[1]),
+#                                        data[index_materialMesh + 54])
+# data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_hoyre[0]) + ',',
+#                                        data[index_materialMesh + 55])
+# data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_hoyre[1]),
+#                                        data[index_materialMesh + 55])
 # and write everything back
 with open(path_of_RS2_file, 'w') as file:
     file.writelines(data)

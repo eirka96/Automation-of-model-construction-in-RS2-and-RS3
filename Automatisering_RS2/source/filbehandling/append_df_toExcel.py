@@ -27,14 +27,14 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
 
     Usage examples:
 
-    #>>> append_df_to_excel('d:/temp/test.xlsx', df)
+    #>>> append_df_to_excel('d:/temp/geometry_operations.xlsx', df)
 
-    #>>> append_df_to_excel('d:/temp/test.xlsx', df, header=None, index=False)
+    #>>> append_df_to_excel('d:/temp/geometry_operations.xlsx', df, header=None, index=False)
 
-    #>>> append_df_to_excel('d:/temp/test.xlsx', df, sheet_name='Sheet2',
+    #>>> append_df_to_excel('d:/temp/geometry_operations.xlsx', df, sheet_name='Sheet2',
                            index=False)
 
-    #>>> append_df_to_excel('d:/temp/test.xlsx', df, sheet_name='Sheet2',
+    #>>> append_df_to_excel('d:/temp/geometry_operations.xlsx', df, sheet_name='Sheet2',
                            index=False, startrow=25)
 
     (c) [MaxU](https://stackoverflow.com/users/5741205/maxu?tab=profile)

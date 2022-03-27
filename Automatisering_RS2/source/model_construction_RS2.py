@@ -1,6 +1,7 @@
 import numpy as np
 import re
-import matplotlib.path as mpltPath
+import matplotlib.path as mplt_path
+import source.filbehandling.make_objects as mo
 
 
 def prepare_angel(angel):
@@ -8,11 +9,15 @@ def prepare_angel(angel):
         if angel % 360 != 0:
             angel = angel % 360
         else:
-            angel = angel / 360
+            angel = 0
     if 89.99999 < angel < 90.00001 or -89.99999 > angel > -90.00001:
         angel = 89.99999
     elif 269.99999 < angel < 270.00001 or -269.99999 > angel > -270.00001:
         angel = 269.99999
+    # elif angel == 0:
+    #     angel = 0.00001
+    # elif angel == 360:
+    #     angel = 259.99999
     return angel
 
 
@@ -42,7 +47,7 @@ class InnerBoundary:
         self.diameter = diameter
         self.vinkel = vinkel
         self.points_tunnel_boundary = points_tunnel_boundary.copy()
-        path = mpltPath.Path(points_tunnel_boundary)
+        path = mplt_path.Path(points_tunnel_boundary)
         inside = path.contains_points(self.get_middle_points())
         if any(inside):
             self.inner_points = True
@@ -112,10 +117,6 @@ class InnerBoundary:
                          self.punkter_ytre[indices_points_outer_boundary[1]][0])
         b_line = self.punkter_ytre[indices_points_outer_boundary[0]][1] - a_line * \
                  self.punkter_ytre[indices_points_outer_boundary[0]][0]
-
-        # if 90 < self.vinkel < 180 or -90 > self.vinkel > -180:
-        #     a_line = -1*a_line
-        #     b_line = -1*b_line
         return a_line, b_line
 
     def calculate_inner_points(self, a_line, b_line):
@@ -136,16 +137,6 @@ class InnerBoundary:
         points = [point_pos, point_neg]
         return points
 
-    # def get_points_on_circular_boundary(self):
-    #     points = []
-    #     for i in range(self.ant_linjer*2):
-    #         quad_index = inner_boundary.get_quad_index(self, i)
-    #         index_lowest_diff = inner_boundary.get_index_lowest_diff_points(self, quad_index, i)
-    #         indices_points_outer_boundary = inner_boundary.get_indices_outer_boundary(self, i)
-    #         point = inner_boundary.calculate_intersection(self, quad_index, index_lowest_diff, indices_points_outer_boundary)
-    #         points.append(point)
-    #     return points
-
     def calculate_intersection(self, punkt, element):
         quad_index = self.get_quad_index(punkt)
         index_lowest_diff = self.get_index_lowest_diff_points(quad_index, punkt)
@@ -164,7 +155,7 @@ class InnerBoundary:
     def get_points_on_circular_boundary_2(self):
         points = []
         k = [3, 1]
-        path = mpltPath.Path(self.points_tunnel_boundary)
+        path = mplt_path.Path(self.points_tunnel_boundary)
         for i in range(self.ant_linjer):
             inside = path.contains_point(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
                                           (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
@@ -178,8 +169,8 @@ class InnerBoundary:
                 point, point1 = None, None
                 points.append(point)
                 points.append(point1)
-        P = points.copy()
-        points = [P[0], P[2], P[3], P[1]]
+        p = points.copy()
+        points = [p[0], p[2], p[3], p[1]]
         return points
 
     def get_start_quad(self, punkt):
@@ -194,8 +185,6 @@ class InnerBoundary:
     def sort_boundary_points(self):
         points = self.get_points_on_circular_boundary_2()
         points = [value for value in points if value is not None]
-        print('________Hallo________')
-        print(points)
         i_data_list = []
         for i in range(len(points)):
             quad_index = self.get_quad_index(points[i])
@@ -203,7 +192,6 @@ class InnerBoundary:
             index_lowest_diff.sort()
             i_data_list.append(self.index_boundary1 + self.get_start_quad(points[i]) + index_lowest_diff[1])
         i_data_list, points = (list(t) for t in zip(*sorted(zip(i_data_list, points))))
-        print(points)
         self.n_points_ib = self.n_points_ib + len(points)
         return i_data_list, points
 
@@ -211,7 +199,6 @@ class InnerBoundary:
         i_data_list, points = self.sort_boundary_points()
         p = 0
         for i in range(len(points)):
-            # print(i_data_list[i]-self.index_boundary1, points[i])
             self.data.insert(i_data_list[i] + p,
                              "         {}: ".format(0) + str(points[i][0]) + ', ' + str(points[i][1]) + '\n')
             self.data.insert(i_data_list[i] + self.n_points_ib + 10, "        vertex 0 is temp: no" + '\n')
@@ -253,7 +240,8 @@ class OuterBoundary:
         a = (point_r[1] - point_l[1]) / (point_r[0] - point_l[0])
         b = point_r[1] - a * point_r[0]
         point = []
-        # finder hvilken begrænsning som gjelder for de to punkter som bæskriver linja og lagrer den ferdige beskrivelsen i en vector
+        # finder hvilken begrænsning som gjelder for de to punkter som bæskriver linja og lagrer den ferdige
+        # beskrivelsen i en vector
         for i in range(ant_linjer):
             y = a * test[i] + b
             x = (test[i] - b) / a
@@ -275,11 +263,12 @@ class OuterBoundary:
         c, d = OuterBoundary.get_linfunc(punkter_under)
         func1 = [-abs(a), abs(b)]
         func2 = [-abs(c), abs(d)]
-        check = [abs(func1[0]*150 + func1[1]), abs((150-func1[1])/func1[0]), abs(func2[0] * 150 + func2[1]), abs((150 - func2[1]) / func2[0])]
-        if any(z >= 150 for z in check):
-            return True
-        else:
+        check = [abs(func1[0] * 150 + func1[1]), abs((150 - func1[1]) / func1[0]), abs(func2[0] * 150 + func2[1]),
+                 abs((150 - func2[1]) / func2[0])]
+        if any(z <= 150 for z in check[0:2]) and any(z <= 150 for z in check[2:4]):
             return False
+        else:
+            return True
 
     def which_line(self, element):
         if self.punkter_ytre[element][1] == -150 and -150 < self.punkter_ytre[element][0] <= 150:
@@ -323,24 +312,18 @@ class OuterBoundary:
 
     def sort_ob_points(self, item):
         item, self.punkter_ytre = (list(t) for t in zip(*sorted(zip(item, self.punkter_ytre), reverse=True)))
-        # self.punkter = sorted(self.punkter, key=self.key_sorter)
         for i in range(4, 0, -1):
             indices = [j for j, x in enumerate(item) if x == i]
             if len(indices) > 1:
                 to_sort = self.punkter_ytre[indices[0]:indices[-1] + 1]
                 self.punkter_ytre[indices[0]:indices[-1] + 1] = sorted(to_sort, key=self.key_sorter)
-            print(self.punkter_ytre)
         return item
 
     def set_points_outer_boundary(self):
         placement_new_point = []
         for i in range(self.ant_pkt_ytre):
             placement_new_point.append(self.get_boundary_index(i))
-        # print(placement_new_point)
-        # print(self.punkter)
         placement_new_point = self.sort_ob_points(placement_new_point)
-        # print(placement_new_point)
-        # print(self.punkter)
         dummy = placement_new_point.copy()
         k = 1
         for i in range(0, self.ant_pkt_ytre):
@@ -352,7 +335,6 @@ class OuterBoundary:
             self.data.insert(placement_new_point[i] + self.index_boundary2,
                              "        {}: ".format(0) + str(self.punkter_ytre[i][0]) + ', ' + str(
                                  self.punkter_ytre[i][1]) + '\n')
-            print(placement_new_point)
         for index in range(len(self.data[self.index_boundary2:(self.index_boundary2 + 8)])):
             self.data[self.index_boundary2 + index] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + str(index) + ':',
                                                              self.data[self.index_boundary2 + index])
@@ -360,12 +342,13 @@ class OuterBoundary:
 
 
 class BoundaryLines:
-    def __init__(self, punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data):
+    def __init__(self, punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data, ant_linjer):
         self.index_boundary3 = index_boundary3
         self.index_boundary4 = index_boundary4
         self.punkter_ytre = punkter_ytre
         self.punkter_indre = punkter_indre
         self.data = data
+        self.ant_linjer = ant_linjer
 
     @staticmethod
     def inner_points_cleanup(punkter):
@@ -393,7 +376,6 @@ class BoundaryLines:
 
     def set_weakness_points(self):
         punkter = self.sort_weakness_points()
-        print(punkter)
         if all(elem is None for elem in self.punkter_indre):
             self.set_weakness_exl_inner_points()
         elif all(elem is not None for elem in self.punkter_indre):
@@ -453,27 +435,347 @@ class BoundaryLines:
                                                           self.data[index_boundary[i] - 1])
         return
 
+    def get_middle_points(self):
+        p = []
+        for i in range(self.ant_linjer):
+            k = [3, 1]
+            p.append(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
+                      (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
+        return p
+
     def set_weakness_exl_inner_points(self):
         index_boundary = [self.index_boundary4, self.index_boundary3]
+        middlepoints = self.get_middle_points()
         p = [3, 1]
         for i in range(len(index_boundary)):
             self.data.pop(index_boundary[i] + 17)
-            self.data.pop(index_boundary[i] + 16)
             self.data.pop(index_boundary[i] + 2)
-            self.data.pop(index_boundary[i] + 1)
             self.data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + '1:',
                                                       self.data[index_boundary[i] + 1])
             self.data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
-                                                      r'\g<1>' + str(self.punkter_ytre[i + p[i]][0]) + ',',
+                                                      r'\g<1>' + str(middlepoints[i][0]) + ',',
                                                       self.data[index_boundary[i] + 1])
             self.data[index_boundary[i] + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
-                                                      r'\g<1>' + str(self.punkter_ytre[i + p[i]][1]),
+                                                      r'\g<1>' + str(middlepoints[i][1]),
                                                       self.data[index_boundary[i] + 1])
+            self.data[index_boundary[i] + 2] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + '2:',
+                                                      self.data[index_boundary[i] + 2])
+            self.data[index_boundary[i] + 2] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                      r'\g<1>' + str(self.punkter_ytre[i + p[i]][0]) + ',',
+                                                      self.data[index_boundary[i] + 2])
+            self.data[index_boundary[i] + 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                      r'\g<1>' + str(self.punkter_ytre[i + p[i]][1]),
+                                                      self.data[index_boundary[i] + 2])
             self.data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
                                                   r'\g<1>' + str(self.punkter_ytre[i][0]) + ',',
                                                   self.data[index_boundary[i]])
             self.data[index_boundary[i]] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(self.punkter_ytre[i][1]),
                                                   self.data[index_boundary[i]])
-            self.data[index_boundary[i] - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + '2',
-                                                      self.data[index_boundary[i] - 1])
+            self.data[index_boundary[i] - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + '3',
+                                                        self.data[index_boundary[i] - 1])
+        return
+
+
+class Materials(InnerBoundary):
+    def __init__(self, index_materials, punkter_indre, ytre_grense, ant_linjer, nth_quad, punkter_ytre, data,
+                 number_points_inner_boundary, index_boundary1,
+                 diameter, vinkel, points_tunnel_boundary):
+        super().__init__(ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
+                         diameter, vinkel, points_tunnel_boundary)
+        self.index_materials = index_materials
+        self.punkter_indre = punkter_indre.copy()
+        self.ytre_grense = ytre_grense
+
+    def setmaterialmesh(self):
+        if all(points is None for points in self.punkter_indre):
+            self.__setmaterialmesh0()
+        elif any(points is None for points in self.punkter_indre):
+            self.__setmaterialmesh1()
+        else:
+            self.__setmaterialmesh2()
+        return
+
+    def __setmaterialmesh0(self):
+        del self.data[self.index_materials + 36:self.index_materials + 63]
+        # path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
+        #                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
+        #                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2" \
+        #                    r"\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea "
+        # path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
+        #
+        # # henter kildefilen til RS2, lagret som .fea
+        # with open(path_of_RS2_file, 'w') as file:
+        #     # read a list of lines into data
+        #     file.writelines(self.data)
+        i_material = self.index_materials
+        normaler = self.get_normal_lines()
+        ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
+        print(ytre_punkt_over, ytre_punkt_under)
+        list_iterate, list_iterate1 = self.__get_material_list0(ytre_punkt_under, ytre_punkt_over)
+        self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                           r'\g<1>' + str(4),
+                                           self.data[i_material - 2])
+        for i in range(4):
+            for j in range(3):
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][0]) + ',',
+                                                       self.data[i_material + j + 1])
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][1]),
+                                                       self.data[i_material + j + 1])
+                self.data[i_material + 5] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                   r'\g<1>' + str(list_iterate1[i][0]),
+                                                   self.data[i_material + 5])
+                self.data[i_material + 6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                   r'\g<1>' + str(list_iterate1[i][1]),
+                                                   self.data[i_material + 6])
+            i_material += 9
+        return
+
+    def __get_material_list0(self, ytre_punkt_under, ytre_punkt_over):
+        list = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
+                [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
+                [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
+                [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
+        list1 = [[15, 15], [15, 15], [16, 16], [15, 0]]
+        return list, list1
+
+    def __setmaterialmesh1(self):
+        del self.data[self.index_materials + 45:self.index_materials + 63]
+        if self.vinkel == 0:
+            ytre_punkt_over = [0, 150]
+            ytre_punkt_under = [0, -150]
+            if self.punkter_indre[0] is not None:
+                punkt_i_sone, punkt_u_sone = [0, 5], [0, -5]
+            else:
+                punkt_i_sone, punkt_u_sone = [0, -5], [0, 5]
+        else:
+            normaler = self.get_normal_lines()
+            middlepoints = self.get_middle_points()
+            under, over = middlepoints[0], middlepoints[1]
+            if self.origo_is_between(under, over):
+                ytre_punkt_under = self.checker_ob(normaler[0], 0)
+                ytre_punkt_over = self.checker_ob(normaler[1], 1)
+            else:
+                ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
+            if self.punkter_indre[0] is not None:
+                punkt_i_sone, punkt_u_sone = self.checker_ib(normaler[0], 0)
+            else:
+                punkt_i_sone, punkt_u_sone = self.checker_ib(normaler[1], 1)
+        list_iterate, list_iterate1 = self.__get_material_list1(ytre_punkt_under, ytre_punkt_over, punkt_i_sone, punkt_u_sone)
+        print(list_iterate)
+        i_material = self.index_materials
+        self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                           r'\g<1>' + str(5),
+                                           self.data[i_material - 2])
+        for i in range(5):
+            for j in range(3):
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][0]) + ',',
+                                                       self.data[i_material + j + 1])
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][1]),
+                                                       self.data[i_material + j + 1])
+            self.data[i_material + 5] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                               r'\g<1>' + str(list_iterate1[i][0]),
+                                               self.data[i_material + 5])
+            self.data[i_material + 6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                               r'\g<1>' + str(list_iterate1[i][1]),
+                                               self.data[i_material + 6])
+            # path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
+            #                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
+            #                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2" \
+            #                    r"\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea "
+            # path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
+            #
+            # # henter kildefilen til RS2, lagret som .fea
+            # with open(path_of_RS2_file, 'w') as file:
+            #     # read a list of lines into data
+            #     file.writelines(self.data)
+            i_material += 9
+        return
+
+    def __get_opposite_circb_point(self, element):
+        middlepoint = self.get_middle_point(element)
+        q = [elem for elem in self.punkter_indre if elem is not None]
+        r = [round(q[0][0], 17), round(q[0][1], 17)]
+        r = self.points_tunnel_boundary.index(r)
+        s = [round(q[1][0], 17), round(q[1][1], 17)]
+        s = self.points_tunnel_boundary.index(s)
+        u = round((r + s) / 2)
+        point = self.points_tunnel_boundary[u]
+        return point
+
+    def __get_material_list1(self, ytre_punkt_under, ytre_punkt_over, punkt_i_sone, punkt_u_sone):
+        # q til u, finne et punkt på tunnel boundary som gjør at materialmeshet for dette materialet blir veldefinert
+        p = [3, 2]
+        if self.punkter_indre[0] is not None:
+            i = 0
+        else:
+            i = 1
+        list = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
+                [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
+                [self.punkter_indre[i], self.punkter_indre[p[i]], punkt_i_sone],
+                [self.punkter_indre[i], self.punkter_indre[p[i]], punkt_u_sone],
+                [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[p[i]]]]
+        list1 = [[15, 15], [15, 15], [16, 0], [15, 0], [16, 16]]
+        return list, list1
+
+    def get_middle_point(self, element):
+        k = [3, 1]
+        middlepoint = ((self.punkter_ytre[element][0] + self.punkter_ytre[element + k[element]][0]) / 2,
+                       (self.punkter_ytre[element][1] + self.punkter_ytre[element + k[element]][1]) / 2)
+        return middlepoint
+
+    @staticmethod
+    def get_normal_line(a0, midpoint):
+        a, b = -(1 / a0), midpoint[1] + (midpoint[0] / a0)
+        return [a, b]
+
+    @staticmethod
+    def origo_is_between(middlepoint_under, middlepoint_over):
+        origo = [0, 0]
+        epsilon = 10**-13
+        crossproduct = (origo[1] - middlepoint_under[1]) * (middlepoint_over[0] - middlepoint_under[0]) - (
+                origo[0] - middlepoint_under[0]) * (middlepoint_over[1] - middlepoint_under[1])
+        # compare versus epsilon for floating point values, or != 0 if using integers
+        if abs(crossproduct) > epsilon:
+            return False
+        dotproduct = (origo[0] - middlepoint_under[0]) * (middlepoint_over[0] - middlepoint_under[0]) + (origo[1] - middlepoint_under[1]) * (middlepoint_over[1] - middlepoint_under[1])
+        if dotproduct < 0:
+            return False
+        squaredlengthba = (middlepoint_over[0] - middlepoint_under[0]) ** 2 + (middlepoint_over[1] - middlepoint_under[1]) ** 2
+        if dotproduct > squaredlengthba:
+            return False
+        return True
+
+    def get_normal_lines(self):
+        mid_points = self.get_middle_points()
+        a0, b0 = self.get_linfunc_outer_boundary(0)
+        normal_under = self.get_normal_line(a0, mid_points[0])
+        c0, d0 = self.get_linfunc_outer_boundary(1)
+        normal_over = self.get_normal_line(c0, mid_points[1])
+        return [normal_under, normal_over]
+
+    @staticmethod
+    def key_checker(elem):
+        return abs(elem[0])
+
+    def checker_ob(self, normal, element):
+        middlepoint = self.get_middle_point(element)
+        points = [self.ytre_grense, normal[0] * self.ytre_grense + normal[1]], [-self.ytre_grense,
+                                                                                normal[0] * -self.ytre_grense + normal[
+                                                                                    1]]
+        check = [np.sqrt((points[0][0] - middlepoint[0]) ** 2 + (points[0][1] - middlepoint[1]) ** 2),
+                 np.sqrt((points[1][0] - middlepoint[0]) ** 2 + (points[1][1] - middlepoint[1]) ** 2)]
+        check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
+        point = point[0]
+        return point
+
+    def checker_ob_exl_innerb(self, normal):
+        under = 0
+        over = 1
+        middlepoint_under = self.get_middle_point(under)
+        middlepoint_over = self.get_middle_point(over)
+        points_under = [self.ytre_grense, normal[under][0] * self.ytre_grense + normal[under][1]], [-self.ytre_grense, normal[under][0] * -self.ytre_grense + normal[under][1]]
+        points_over = [self.ytre_grense, normal[over][0] * self.ytre_grense + normal[over][1]], [-self.ytre_grense, normal[over][0] * -self.ytre_grense + normal[over][1]]
+        check_under = [np.sqrt(
+            (points_under[0][0] - middlepoint_under[0]) ** 2 + (points_under[0][1] - middlepoint_under[1]) ** 2),
+            np.sqrt((points_under[1][0] - middlepoint_under[0]) ** 2 + (
+                    points_under[1][1] - middlepoint_under[1]) ** 2)]
+        check_over = [
+            np.sqrt((points_over[0][0] - middlepoint_over[0]) ** 2 + (points_over[0][1] - middlepoint_over[1]) ** 2),
+            np.sqrt((points_over[1][0] - middlepoint_over[0]) ** 2 + (points_over[1][1] - middlepoint_over[1]) ** 2)]
+        check_under, points_under = [list(t) for t in zip(*sorted(zip(check_under, points_under)))]
+        check_over, points_over = [list(t) for t in zip(*sorted(zip(check_over, points_over)))]
+        if check_under[0] < check_over[0]:
+            point_under = points_under[0]
+            point_over = points_over[1]
+        else:
+            point_under = points_under[1]
+            point_over = points_over[0]
+        return point_under, point_over
+
+    def checker_ib(self, normal, element):
+        middlepoint = self.get_middle_point(element)
+        middlepoints = self.get_middle_points()
+        point_pos, point_neg = self.calculate_inner_points(normal[0], normal[1])
+        points = [point_pos, point_neg]
+        q = self.calculate_intersection_ib(point_pos, normal)
+        p = self.calculate_intersection_ib(point_neg, normal)
+        check = [np.sqrt((q[0] - middlepoint[0]) ** 2 + (q[1] - middlepoint[1]) ** 2),
+                 np.sqrt((p[0] - middlepoint[0]) ** 2 + (p[1] - middlepoint[1]) ** 2)]
+        check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
+        if self.origo_is_between(middlepoints[0], middlepoints[1]):
+            point_weakness = point[1]
+            point_exl_weakness = point[0]
+        else:
+            point_weakness = point[0]
+            point_exl_weakness = point[1]
+
+        return point_weakness, point_exl_weakness
+
+    def checker_ib_centered(self, normal, element):
+        middlepoint = self.get_middle_point(element)
+        point_pos, point_neg = self.calculate_inner_points(normal[0], normal[1])
+        points = [point_pos, point_neg]
+        q = self.calculate_intersection_ib(point_pos, normal)
+        p = self.calculate_intersection_ib(point_neg, normal)
+        check = [np.sqrt((q[0] - middlepoint[0]) ** 2 + (q[1] - middlepoint[1]) ** 2),
+                 np.sqrt((p[0] - middlepoint[0]) ** 2 + (p[1] - middlepoint[1]) ** 2)]
+        check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
+
+        point = point[0]
+        print(point)
+        return point
+
+    def calculate_intersection_ib(self, punkt, normal):
+        quad_index = self.get_quad_index(punkt)
+        index_lowest_diff = self.get_index_lowest_diff_points(quad_index, punkt)
+        a_circ = (self.nth_quad[quad_index][index_lowest_diff[1]][1] - self.nth_quad[quad_index][index_lowest_diff[0]][
+            1]) / (
+                         self.nth_quad[quad_index][index_lowest_diff[1]][0] -
+                         self.nth_quad[quad_index][index_lowest_diff[0]][0])
+        b_circ = self.nth_quad[quad_index][index_lowest_diff[1]][1] - a_circ * \
+                 self.nth_quad[quad_index][index_lowest_diff[1]][0]
+        x = (b_circ - normal[1]) / (normal[0] - a_circ)
+        y = (b_circ * normal[0] - normal[1] * a_circ) / (normal[0] - a_circ)
+        point = [x, y]
+        return point
+
+    def __get_material_list2(self, ytre_punkt_under, ytre_punkt_over, indre_punkt_under, indre_punkt_over):
+        list = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
+                [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
+                [self.punkter_indre[0], self.punkter_indre[3], indre_punkt_under],
+                [self.punkter_indre[1], self.punkter_indre[2], indre_punkt_over],
+                [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[2]],
+                [self.punkter_ytre[0], self.punkter_ytre[1], self.punkter_indre[1]],
+                [self.punkter_indre[3], self.punkter_indre[2], self.punkter_indre[1]]]
+        list1 = [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]
+        return list, list1
+
+    def __setmaterialmesh2(self):
+        normaler = self.get_normal_lines()
+        ytre_punkt_under = self.checker_ob(normaler[0], 0)
+        ytre_punkt_over = self.checker_ob(normaler[1], 1)
+        indre_punkt_under = self.checker_ib_centered(normaler[0], 0)
+        indre_punkt_over = self.checker_ib_centered(normaler[1], 1)
+        list_iterate, list_iterate1 = self.__get_material_list2(ytre_punkt_under, ytre_punkt_over, indre_punkt_under,
+                                                                indre_punkt_over)
+        i_material = self.index_materials
+        for i in range(7):
+            for j in range(3):
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){1})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][0]) + ',',
+                                                       self.data[i_material + j + 1])
+                self.data[i_material + j + 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                                       r'\g<1>' + str(list_iterate[i][j][1]),
+                                                       self.data[i_material + j + 1])
+            self.data[i_material + 5] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                               r'\g<1>' + str(list_iterate1[i][0]),
+                                               self.data[i_material + 5])
+            self.data[i_material + 6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
+                                               r'\g<1>' + str(list_iterate1[i][1]),
+                                               self.data[i_material + 6])
+            i_material += 9
         return

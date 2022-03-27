@@ -5,9 +5,9 @@ import re
 import matplotlib.path as mpltPath
 
 # her settes parameterene som behøves for å lage modellen
-vinkel = 135
-forflytning_x = -142
-forflytning_y = -150
+vinkel = -90
+forflytning_x = -4
+forflytning_y = 0
 mektighet = 8
 
 vinkel = mc.prepare_angel(vinkel)
@@ -28,7 +28,7 @@ with open(path_of_RS2_file, 'r') as file:
     # read a list of lines into data
     data = file.readlines()
 # henter nøkkelelementer i listen data bassert på unike nøkkelord, som blir brukt til å navigere tekseditoren
-index_materialMesh = data.index("materials mesh start:\n") + 4
+index_materialMesh = data.index("materials mesh start:\n") + 3
 index_boundary1 = data.index("  boundary 1 start:\n") + 6
 points_tunnel_boundary0 = data[45753:46117].copy()
 # making list of points stored as float:
@@ -88,7 +88,6 @@ else:
         quit()
 
 punkter_ytre = [ytre_bunn_hoyre, ytre_topp_hoyre, ytre_topp_venstre, ytre_bunn_venstre]
-print(punkter_ytre)
 
 # indre grense, definerer punktene på tunnel_boundary og svakhetssonen
 
@@ -97,7 +96,6 @@ ib = mc.InnerBoundary(ant_linjer, quad, punkter_ytre, data, n_points_boundary, i
 if ib.inner_points:
     punkter_indre = ib.get_points_on_circular_boundary_2()
     ib.set_inner_boundary()
-    print(punkter_indre)
     point_4th = punkter_indre[0]
     point_1st = punkter_indre[1]
     point_2nd = punkter_indre[2]
@@ -115,64 +113,16 @@ index_boundary4 = data.index("  boundary 4 start:\n") + 6
 mc.OuterBoundary(punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre)
 
 # endre boundary (svakhetssone) i kildekoden til RS2, element 3 og 4 - hhv. bunn og topp
-bl = mc.BoundaryLines(punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data)
+bl = mc.BoundaryLines(punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data, ant_linjer)
 bl.set_weakness_points()
 
+points_tunnel_boundary0 = data[45753:45753+ib.n_points_ib].copy()
+# making list of points stored as float:
+points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
 # endre materials mesh i kildekoden til RS2, element 1
-# data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
-#                                       data[index_materialMesh + 9])
-# data[index_materialMesh + 9] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
-#                                       data[index_materialMesh + 9])
-# # data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\1 '+str(point_3rd[0])+',', data[index_materialMesh+10])
-# # data[index_materialMesh+10] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\1 '+str(point_3rd[1]), data[index_materialMesh+10])
-# data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_4th[0]) + ',',
-#                                        data[index_materialMesh + 11])
-# data[index_materialMesh + 11] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_4th[1]),
-#                                        data[index_materialMesh + 11])
-#
-# # endre materials mesh i kildekoden til RS2, element 2
-# data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_venstre[0]) + ',',
-#                                        data[index_materialMesh + 18])
-# data[index_materialMesh + 18] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_venstre[1]),
-#                                        data[index_materialMesh + 18])
-# data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_venstre[0]) + ',',
-#                                        data[index_materialMesh + 19])
-# data[index_materialMesh + 19] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_venstre[1]),
-#                                        data[index_materialMesh + 19])
-#
-# # endre materials mesh i kildekoden til RS2, element 3
-# data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_3rd[0]) + ',',
-#                                        data[index_materialMesh + 27])
-# data[index_materialMesh + 27] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_3rd[1]),
-#                                        data[index_materialMesh + 27])
-# data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
-#                                        data[index_materialMesh + 28])
-# data[index_materialMesh + 28] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
-#                                        data[index_materialMesh + 28])
-# data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
-#                                        data[index_materialMesh + 29])
-# data[index_materialMesh + 29] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
-#                                        data[index_materialMesh + 29])
-#
-# # endre materials mesh i kildekoden til RS2, element 5
-# data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_1st[0]) + ',',
-#                                        data[index_materialMesh + 45])
-# data[index_materialMesh + 45] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_1st[1]),
-#                                        data[index_materialMesh + 45])
-# data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(point_2nd[0]) + ',',
-#                                        data[index_materialMesh + 47])
-# data[index_materialMesh + 47] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(point_2nd[1]),
-#                                        data[index_materialMesh + 47])
-#
-# # endre materials mesh i kildekoden til RS2, element 6
-# data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_topp_hoyre[0]) + ',',
-#                                        data[index_materialMesh + 54])
-# data[index_materialMesh + 54] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_topp_hoyre[1]),
-#                                        data[index_materialMesh + 54])
-# data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){1})\S+', r'\g<1>' + str(ytre_bunn_hoyre[0]) + ',',
-#                                        data[index_materialMesh + 55])
-# data[index_materialMesh + 55] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(ytre_bunn_hoyre[1]),
-#                                        data[index_materialMesh + 55])
+mls = mc.Materials(index_materialMesh, punkter_indre, ytre_grenser, ant_linjer, quad, punkter_ytre, data,
+                   n_points_boundary, index_boundary1, diameter, vinkel, points_tunnel_boundary)
+mls.setmaterialmesh()
 # and write everything back
 with open(path_of_RS2_file, 'w') as file:
     file.writelines(data)

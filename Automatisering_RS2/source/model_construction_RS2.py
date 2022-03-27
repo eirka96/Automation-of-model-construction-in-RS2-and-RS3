@@ -33,7 +33,7 @@ class InnerBoundary:
     # svakhetssonen i rs2. Dette skal kun inntreffe hvis sonen treffer tunnelen. Med andre ord, denne classen må ta
     # høyde for situasjon der enten 0, 1, 2 etc. linjeelement treffer tunnelåpningen.
     def __init__(self, ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
-                 diameter, vinkel, points_tunnel_boundary):
+                 diameter, vinkel, points_tunnel_boundary, ytre_grenser_utstrekning):
         self.nth_quad = nth_quad
         self.punkter_ytre = punkter_ytre.copy()
         self.data = data
@@ -43,6 +43,7 @@ class InnerBoundary:
         self.diameter = diameter
         self.vinkel = vinkel
         self.points_tunnel_boundary = points_tunnel_boundary.copy()
+        self.ytre_grenser = ytre_grenser_utstrekning
         path = mplt_path.Path(points_tunnel_boundary)
         inside = path.contains_points(self.get_middle_points())
         if any(inside):
@@ -213,11 +214,12 @@ class InnerBoundary:
 
 
 class OuterBoundary:
-    def __init__(self, punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre):
+    def __init__(self, punkter_ytre, data, index_boundary2, vinkel, ant_pkt_ytre, ytre_grenser_utstrekning):
         self.punkter_ytre = punkter_ytre.copy()
         self.data = data
         self.index_boundary2 = index_boundary2
         self.ant_pkt_ytre = ant_pkt_ytre
+        self.ytre_grenser = ytre_grenser_utstrekning
         if vinkel != 0:
             self.del_points()
             self.set_points_outer_boundary()
@@ -254,26 +256,26 @@ class OuterBoundary:
         return point[0].tolist(), point[1].tolist()
 
     @staticmethod
-    def check_points_ob(punkter_over, punkter_under):
+    def check_points_ob(punkter_over, punkter_under, ytre_grenser):
         a, b = OuterBoundary.get_linfunc(punkter_over)
         c, d = OuterBoundary.get_linfunc(punkter_under)
         func1 = [-abs(a), abs(b)]
         func2 = [-abs(c), abs(d)]
-        check = [abs(func1[0] * 150 + func1[1]), abs((150 - func1[1]) / func1[0]), abs(func2[0] * 150 + func2[1]),
-                 abs((150 - func2[1]) / func2[0])]
-        if any(z <= 150 for z in check[0:2]) and any(z <= 150 for z in check[2:4]):
+        check = [abs(func1[0] * ytre_grenser + func1[1]), abs((ytre_grenser - func1[1]) / func1[0]), abs(func2[0] * ytre_grenser + func2[1]),
+                 abs((ytre_grenser - func2[1]) / func2[0])]
+        if any(z <= ytre_grenser for z in check[0:2]) and any(z <= ytre_grenser for z in check[2:4]):
             return False
         else:
             return True
 
     def which_line(self, element):
-        if self.punkter_ytre[element][1] == -150 and -150 < self.punkter_ytre[element][0] <= 150:
+        if self.punkter_ytre[element][1] == -self.ytre_grenser and -self.ytre_grenser < self.punkter_ytre[element][0] <= self.ytre_grenser:
             return '1st line'
-        elif self.punkter_ytre[element][0] == 150 and -150 < self.punkter_ytre[element][1] <= 150:
+        elif self.punkter_ytre[element][0] == self.ytre_grenser and -self.ytre_grenser < self.punkter_ytre[element][1] <= self.ytre_grenser:
             return '2nd line'
-        elif self.punkter_ytre[element][1] == 150 and -150 <= self.punkter_ytre[element][0] < 150:
+        elif self.punkter_ytre[element][1] == self.ytre_grenser and -self.ytre_grenser <= self.punkter_ytre[element][0] < self.ytre_grenser:
             return '3rd line'
-        elif self.punkter_ytre[element][0] == -150 and -150 <= self.punkter_ytre[element][1] < 150:
+        elif self.punkter_ytre[element][0] == -self.ytre_grenser and -self.ytre_grenser <= self.punkter_ytre[element][1] < self.ytre_grenser:
             return '4th line'
         else:
             return None
@@ -293,15 +295,14 @@ class OuterBoundary:
         self.data.pop(self.index_boundary2 + 3)
         self.data.pop(self.index_boundary2 + 2)
 
-    @staticmethod
-    def key_sorter(item):
-        if item[0] == -150 and -150 <= item[1] < 150:
+    def key_sorter(self, item):
+        if item[0] == -self.ytre_grenser and -self.ytre_grenser <= item[1] < self.ytre_grenser:
             return item[1] * -1
-        elif item[1] == 150 and -150 <= item[0] < 150:
+        elif item[1] == self.ytre_grenser and -self.ytre_grenser <= item[0] < self.ytre_grenser:
             return item[0] * -1
-        elif item[0] == 150 and -150 < item[1] <= 150:
+        elif item[0] == self.ytre_grenser and -self.ytre_grenser < item[1] <= self.ytre_grenser:
             return item[1]
-        elif item[1] == -150 and -150 < item[0] <= 150:
+        elif item[1] == -self.ytre_grenser and -self.ytre_grenser < item[0] <= self.ytre_grenser:
             return item[0]
         else:
             return False
@@ -473,14 +474,13 @@ class BoundaryLines:
 
 
 class Materials(InnerBoundary):
-    def __init__(self, index_materials, punkter_indre, ytre_grense, ant_linjer, nth_quad, punkter_ytre, data,
+    def __init__(self, index_materials, punkter_indre, ytre_grenser_utstrekning, ant_linjer, nth_quad, punkter_ytre, data,
                  number_points_inner_boundary, index_boundary1,
                  diameter, vinkel, points_tunnel_boundary):
-        super().__init__(ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
-                         diameter, vinkel, points_tunnel_boundary)
+        super().__init__(ant_linjer, nth_quad, ytre_grenser_utstrekning, punkter_ytre, data,
+                         number_points_inner_boundary, index_boundary1, diameter, vinkel, points_tunnel_boundary)
         self.index_materials = index_materials
         self.punkter_indre = punkter_indre.copy()
-        self.ytre_grense = ytre_grense
 
     def setmaterialmesh(self):
         if all(points is None for points in self.punkter_indre):
@@ -519,18 +519,18 @@ class Materials(InnerBoundary):
         return
 
     def __get_material_list0(self, ytre_punkt_under, ytre_punkt_over):
-        list = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
-                [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
-                [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
-                [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
+        list0 = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
+                 [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
+                 [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
+                 [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
         list1 = [[15, 15], [15, 15], [16, 16], [15, 0]]
-        return list, list1
+        return list0, list1
 
     def __setmaterialmesh1(self):
         del self.data[self.index_materials + 45:self.index_materials + 63]
         if self.vinkel == 0:
-            ytre_punkt_over = [0, 150]
-            ytre_punkt_under = [0, -150]
+            ytre_punkt_over = [0, self.ytre_grenser]
+            ytre_punkt_under = [0, -self.ytre_grenser]
             if self.punkter_indre[0] is not None:
                 punkt_i_sone, punkt_u_sone = [0, 5], [0, -5]
             else:
@@ -572,7 +572,6 @@ class Materials(InnerBoundary):
         return
 
     def __get_opposite_circb_point(self, element):
-        middlepoint = self.get_middle_point(element)
         q = [elem for elem in self.punkter_indre if elem is not None]
         r = [round(q[0][0], 17), round(q[0][1], 17)]
         r = self.points_tunnel_boundary.index(r)
@@ -639,8 +638,8 @@ class Materials(InnerBoundary):
 
     def checker_ob(self, normal, element):
         middlepoint = self.get_middle_point(element)
-        points = [self.ytre_grense, normal[0] * self.ytre_grense + normal[1]], [-self.ytre_grense,
-                                                                                normal[0] * -self.ytre_grense + normal[
+        points = [self.ytre_grenser, normal[0] * self.ytre_grenser + normal[1]], [-self.ytre_grenser,
+                                                                                normal[0] * -self.ytre_grenser + normal[
                                                                                     1]]
         check = [np.sqrt((points[0][0] - middlepoint[0]) ** 2 + (points[0][1] - middlepoint[1]) ** 2),
                  np.sqrt((points[1][0] - middlepoint[0]) ** 2 + (points[1][1] - middlepoint[1]) ** 2)]
@@ -653,8 +652,8 @@ class Materials(InnerBoundary):
         over = 1
         middlepoint_under = self.get_middle_point(under)
         middlepoint_over = self.get_middle_point(over)
-        points_under = [self.ytre_grense, normal[under][0] * self.ytre_grense + normal[under][1]], [-self.ytre_grense, normal[under][0] * -self.ytre_grense + normal[under][1]]
-        points_over = [self.ytre_grense, normal[over][0] * self.ytre_grense + normal[over][1]], [-self.ytre_grense, normal[over][0] * -self.ytre_grense + normal[over][1]]
+        points_under = [self.ytre_grenser, normal[under][0] * self.ytre_grenser + normal[under][1]], [-self.ytre_grenser, normal[under][0] * -self.ytre_grenser + normal[under][1]]
+        points_over = [self.ytre_grenser, normal[over][0] * self.ytre_grenser + normal[over][1]], [-self.ytre_grenser, normal[over][0] * -self.ytre_grenser + normal[over][1]]
         check_under = [np.sqrt(
             (points_under[0][0] - middlepoint_under[0]) ** 2 + (points_under[0][1] - middlepoint_under[1]) ** 2),
             np.sqrt((points_under[1][0] - middlepoint_under[0]) ** 2 + (
@@ -720,15 +719,15 @@ class Materials(InnerBoundary):
         return point
 
     def __get_material_list2(self, ytre_punkt_under, ytre_punkt_over, indre_punkt_under, indre_punkt_over):
-        list = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
-                [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
-                [self.punkter_indre[0], self.punkter_indre[3], indre_punkt_under],
-                [self.punkter_indre[1], self.punkter_indre[2], indre_punkt_over],
-                [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[2]],
-                [self.punkter_ytre[0], self.punkter_ytre[1], self.punkter_indre[1]],
-                [self.punkter_indre[3], self.punkter_indre[2], self.punkter_indre[1]]]
+        list0 = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
+                 [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
+                 [self.punkter_indre[0], self.punkter_indre[3], indre_punkt_under],
+                 [self.punkter_indre[1], self.punkter_indre[2], indre_punkt_over],
+                 [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[2]],
+                 [self.punkter_ytre[0], self.punkter_ytre[1], self.punkter_indre[1]],
+                 [self.punkter_indre[3], self.punkter_indre[2], self.punkter_indre[1]]]
         list1 = [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]
-        return list, list1
+        return list0, list1
 
     def __setmaterialmesh2(self):
         normaler = self.get_normal_lines()

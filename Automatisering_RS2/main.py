@@ -8,7 +8,7 @@ from os import path
 from os import mkdir
 
 import source.filbehandling.make_objects as mo
-import source.Automatisering.Auto_handlinger_RS2 as Auto
+import Automatisering_RS2.source.Auto_handlinger_RS2 as Auto
 
 
 pd.set_option('display.max_rows', None)

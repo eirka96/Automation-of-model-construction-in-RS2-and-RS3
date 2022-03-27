@@ -1,7 +1,7 @@
 import numpy as np
 import re
 import matplotlib.path as mplt_path
-import source.filbehandling.make_objects as mo
+# import source.filbehandling.make_objects as mo
 
 
 def prepare_angel(angel):
@@ -14,10 +14,6 @@ def prepare_angel(angel):
         angel = 89.99999
     elif 269.99999 < angel < 270.00001 or -269.99999 > angel > -270.00001:
         angel = 269.99999
-    # elif angel == 0:
-    #     angel = 0.00001
-    # elif angel == 360:
-    #     angel = 259.99999
     return angel
 
 
@@ -497,16 +493,6 @@ class Materials(InnerBoundary):
 
     def __setmaterialmesh0(self):
         del self.data[self.index_materials + 36:self.index_materials + 63]
-        # path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
-        #                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
-        #                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2" \
-        #                    r"\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea "
-        # path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
-        #
-        # # henter kildefilen til RS2, lagret som .fea
-        # with open(path_of_RS2_file, 'w') as file:
-        #     # read a list of lines into data
-        #     file.writelines(self.data)
         i_material = self.index_materials
         normaler = self.get_normal_lines()
         ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
@@ -582,16 +568,6 @@ class Materials(InnerBoundary):
             self.data[i_material + 6] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
                                                r'\g<1>' + str(list_iterate1[i][1]),
                                                self.data[i_material + 6])
-            # path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
-            #                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
-            #                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2" \
-            #                    r"\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea "
-            # path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
-            #
-            # # henter kildefilen til RS2, lagret som .fea
-            # with open(path_of_RS2_file, 'w') as file:
-            #     # read a list of lines into data
-            #     file.writelines(self.data)
             i_material += 9
         return
 

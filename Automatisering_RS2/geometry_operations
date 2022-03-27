@@ -1,8 +1,6 @@
 import source.filbehandling.make_objects as mo
 import source.model_construction_RS2 as mc
 import numpy as np
-import re
-import matplotlib.path as mpltPath
 
 # her settes parameterene som behøves for å lage modellen
 vinkel = -90

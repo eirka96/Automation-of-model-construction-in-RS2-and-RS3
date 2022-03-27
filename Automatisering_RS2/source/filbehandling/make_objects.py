@@ -9,11 +9,11 @@ import pathlib
 from colorama import Fore
 from colorama import Style
 
-
-
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
+
+
 # pd.set_option('display.max_colwidth', -1)
 
 # make_file_name har til hensikt å lage de filnavn tilhørende RS2-prosjekter
@@ -31,21 +31,19 @@ pd.set_option('display.width', None)
 # inneholder informasjon om tunnelens geometri: s for sirkulær og hs for hestesko. Denne er satt deafult til sikrulær
 
 
-# Andre parametere:
-# df_verdier:
-# dataframe som inneholder verdiene som tilhører de ulike parameternavnene
-# file_name_liste:
-# liste som tilslutt inneholder alle filnavnene tilhørende rs2-prosjektene som skal opprettes.
-# path:
-# er variabelen som brukes til å bygge opp hver enkelt streng som tilsammen resulterer i et filnavn for et gitt rs2-prosjekt
+# Andre parametere: df_verdier: dataframe som inneholder verdiene som tilhører de ulike parameternavnene
+# file_name_liste: liste som tilslutt inneholder alle filnavnene tilhørende rs2-prosjektene som skal opprettes. path:
+# er variabelen som brukes til å bygge opp hver enkelt streng som tilsammen resulterer i et filnavn for et gitt
+# rs2-prosjekt.
 
 # returnerer:
 # file_name_list
 
 
 def make_file_name(geometri='S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie" \
-                              r"\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
+    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
+                            r"\parameterstudie" \
+                            r"\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
     file_name_rs2_list = []
@@ -71,9 +69,10 @@ def make_file_name(geometri='S'):
 # beskrivelsen for denne er identisk med den over bare at denne er tilpasset for mappenavn
 # parameter_verdier_excel har en annen sti og det blir ikke lagt til .fez i enden av navnet.
 
-def make_folder_name(geometri = 'S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie" \
-                              r"\excel\Pycharm_automatisering\parameter_verdier_mappenavn.csv "
+def make_folder_name(geometri='S'):
+    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
+                            r"\parameterstudie" \
+                            r"\excel\Pycharm_automatisering\parameter_verdier_mappenavn.csv "
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
     folder_name_list = []
@@ -97,7 +96,7 @@ def delete_and_create_folders(storage_path):
     folder_paths = folder_names
 
     for i in range(len(folder_names)):
-        folder_paths[i] = (storage_path+'/'+folder_names[i]+'/')
+        folder_paths[i] = (storage_path + '/' + folder_names[i] + '/')
 
     while True:
         try:
@@ -108,8 +107,8 @@ def delete_and_create_folders(storage_path):
                     os.mkdir(storage_path)
                 for folder in folder_paths:
                     os.mkdir(os.path.join(storage_path, folder))
-                    os.mkdir(os.path.join(folder, folder+'/csv/'))
-                    os.mkdir(os.path.join(folder, folder+'/rs2/'))
+                    os.mkdir(os.path.join(folder, folder + '/csv/'))
+                    os.mkdir(os.path.join(folder, folder + '/rs2/'))
                 break
             elif x == 'n':
                 if not os.path.exists(storage_path):
@@ -124,7 +123,6 @@ def delete_and_create_folders(storage_path):
             print('implementert verdi ukjent')
             continue
     return
-
 
 
 # hensikten med get_path_folders er å hente stier på de mapper som RS2-filene skal bli lagret i
@@ -152,19 +150,12 @@ def get_name_folders(path_storage_files):
     return list_rs2_folders, list_csv_folders
 
 
-
-
-
-
-
-
 # alternate_slash bytter ut alle bakstreker i hver streng av en liste med strenger og gjør dem om til skråstreker
 # og omvendt.
 # hensikt: formatet til stiene som skiller mappenavn med bakstreker blir ikke forstått av python som forstår skråstreker
 #          Derfor er det nødvendig med en kornvertering.
 # Hvis input ikke kun består av stier der mappenavn blir kun skilt av bakstreker eller skråstreker,
 # så stopper funksjonen å kjøre og ingen endring blir oppnådd.
-
 
 
 # input:
@@ -190,15 +181,15 @@ def alternate_slash(list_path):
         backslash = backslash[:-1]
         find_backslash = [i for i in list_path if backslash in i]
         find_frontslash = [j for j in list_path if '/' in j]
-        if len(find_backslash) == len(list_path) and len(find_frontslash) == 0:       # kjører kun hvis inputfiler
+        if len(find_backslash) == len(list_path) and len(find_frontslash) == 0:  # kjører kun hvis inputfiler
             find_backslash = [sub.replace(backslash, '/') for sub in find_backslash]  # er i rett format (se over)
             list_path = find_backslash
             for i in range(len(list_path)):
                 if list_path[i][-1] == ' ':  # sørger for at formatet til strengen blir rett etter konverteringen
-                    list_path[i] = list_path[i][:-1] # python klarer ikke å lese filplasseringer som er delt med en
+                    list_path[i] = list_path[i][:-1]  # python klarer ikke å lese filplasseringer som er delt med en
                 # if path[-1] != '/':                # enkelt bakstrek.
                 #     path += '/'
-        elif len(find_backslash) == 0 and len(find_frontslash) == len(list_path):       # kjører kun hvis inputfiler
+        elif len(find_backslash) == 0 and len(find_frontslash) == len(list_path):  # kjører kun hvis inputfiler
             find_frontslash = [sub.replace('/', backslash) for sub in find_frontslash]  # # er i rett format (se over)
             list_path = find_frontslash
         else:
@@ -208,16 +199,9 @@ def alternate_slash(list_path):
             return -1
     except TypeError:
         print(f'{Fore.RED}Feil!  Input er enten ikke en liste, eller en liste av strenger.{Style.RESET_ALL}')
-        return -1                               # Fore og style sørger for feilmelding med rød skrift
+        return -1  # Fore og style sørger for feilmelding med rød skrift
 
     return list_path
-
-
-
-
-
-
-
 
 
 # copy_and_store:
@@ -257,21 +241,22 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
     list_rs2_file_names, list_excel_file_names = make_file_name(geometri)
     df_name_rs2_files = pd.DataFrame(columns=name_rs2_folders)
     df_name_csv_files = pd.DataFrame(columns=name_csv_folders)
-    for rs2, csv in zip(name_rs2_folders, name_csv_folders):       # sammenlikner mappenavn med RS2-fil-navn.
+    for rs2, csv in zip(name_rs2_folders, name_csv_folders):  # sammenlikner mappenavn med RS2-fil-navn.
         rs21 = rs2.replace('/rs2/', '')
-        res_rs2 = [i for i in list_rs2_file_names if rs21 in i]     # Når det matcher blir filnavnet lagret i kolonna til
+        res_rs2 = [i for i in list_rs2_file_names if rs21 in i]  # Når det matcher blir filnavnet lagret i kolonna til
         csv1 = csv.replace('/csv/', '')
         res_csv = [i for i in list_excel_file_names if csv1 in i]
         df_name_rs2_files.loc[:, rs2] = pd.Series(res_rs2, dtype=str)  # mappenavnet. Lagres i en dataframe.
         df_name_csv_files.loc[:, csv] = pd.Series(res_csv, dtype=str)
     df_name_rs2_files = df_name_rs2_files.fillna(np.nan).replace([np.nan], [None])  # Tomme elementer får verdien None.
     df_name_csv_files = df_name_csv_files.fillna(np.nan).replace([np.nan], [None])
-    df_list_path_rs2 = df_name_rs2_files.copy()   # ved = alene så vil endringer på den ene føre til samme endringer på den andre
+    df_list_path_rs2 = df_name_rs2_files.copy()  # ved = alene så vil endringer på den ene føre til samme endringer på den andre
     df_list_path_csv = df_name_csv_files.copy()
-    for rs2, csv in zip(name_rs2_folders, name_csv_folders):  # tilordner filnavn sine stier. Tomme elementer forblir tomme.
+    for rs2, csv in zip(name_rs2_folders,
+                        name_csv_folders):  # tilordner filnavn sine stier. Tomme elementer forblir tomme.
         for file in df_list_path_rs2.index.values:
             if df_name_rs2_files[rs2][file] is not None and df_name_csv_files[csv][file] is not None:
-                df_list_path_rs2.loc[file, rs2] = (path_storage_files+'/'+rs2+df_name_rs2_files[rs2][file])
+                df_list_path_rs2.loc[file, rs2] = (path_storage_files + '/' + rs2 + df_name_rs2_files[rs2][file])
                 df_list_path_csv.loc[file, csv] = (path_storage_files + '/' + csv + df_name_csv_files[csv][file])
                 print(df_list_path_rs2[rs2][file])
                 st.copyfile(path_file0_rs2, df_list_path_rs2[rs2][file])
@@ -282,16 +267,12 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
                 for filename in os.listdir(path_feaFileMap):
                     extension = pathlib.Path(filename).suffix
                     print(extension)
-                    source = path_feaFileMap+'/'+filename
-                    destination = path_feaFileMap+'/'+df_name_rs2_files[rs2][file].replace(".fez", '')+extension
+                    source = path_feaFileMap + '/' + filename
+                    destination = path_feaFileMap + '/' + df_name_rs2_files[rs2][file].replace(".fez", '') + extension
                     os.rename(source, destination)
             else:
                 continue
     return df_list_path_rs2, df_list_path_csv
-
-
-
-
 
 
 # get_changing_attribute:

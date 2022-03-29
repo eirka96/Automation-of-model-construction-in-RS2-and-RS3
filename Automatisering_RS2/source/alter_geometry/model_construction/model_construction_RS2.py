@@ -1,7 +1,7 @@
 import numpy as np
 import re
 import matplotlib.path as mplt_path
-# import source.filbehandling.make_objects as mo
+# import Automatisering_RS2.source.filbehandling.make_objects as mo
 
 
 def prepare_angel(angel):
@@ -477,8 +477,8 @@ class Materials(InnerBoundary):
     def __init__(self, index_materials, punkter_indre, ytre_grenser_utstrekning, ant_linjer, nth_quad, punkter_ytre, data,
                  number_points_inner_boundary, index_boundary1,
                  diameter, vinkel, points_tunnel_boundary):
-        super().__init__(ant_linjer, nth_quad, ytre_grenser_utstrekning, punkter_ytre, data,
-                         number_points_inner_boundary, index_boundary1, diameter, vinkel, points_tunnel_boundary)
+        super().__init__(ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
+                         diameter, vinkel, points_tunnel_boundary, ytre_grenser_utstrekning,)
         self.index_materials = index_materials
         self.punkter_indre = punkter_indre.copy()
 
@@ -638,11 +638,14 @@ class Materials(InnerBoundary):
 
     def checker_ob(self, normal, element):
         middlepoint = self.get_middle_point(element)
-        points = [self.ytre_grenser, normal[0] * self.ytre_grenser + normal[1]], [-self.ytre_grenser,
-                                                                                normal[0] * -self.ytre_grenser + normal[
-                                                                                    1]]
+        points = [[self.ytre_grenser, normal[0] * self.ytre_grenser + normal[1]],
+                  [(self.ytre_grenser - normal[1])/normal[0], self.ytre_grenser],
+                  [-self.ytre_grenser, normal[0] * -self.ytre_grenser + normal[1]],
+                  [(-self.ytre_grenser - normal[1])/normal[0], -self.ytre_grenser]]
         check = [np.sqrt((points[0][0] - middlepoint[0]) ** 2 + (points[0][1] - middlepoint[1]) ** 2),
-                 np.sqrt((points[1][0] - middlepoint[0]) ** 2 + (points[1][1] - middlepoint[1]) ** 2)]
+                 np.sqrt((points[1][0] - middlepoint[0]) ** 2 + (points[1][1] - middlepoint[1]) ** 2),
+                 np.sqrt((points[2][0] - middlepoint[0]) ** 2 + (points[2][1] - middlepoint[1]) ** 2),
+                 np.sqrt((points[3][0] - middlepoint[0]) ** 2 + (points[3][1] - middlepoint[1]) ** 2)]
         check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
         point = point[0]
         return point
@@ -730,11 +733,17 @@ class Materials(InnerBoundary):
         return list0, list1
 
     def __setmaterialmesh2(self):
-        normaler = self.get_normal_lines()
-        ytre_punkt_under = self.checker_ob(normaler[0], 0)
-        ytre_punkt_over = self.checker_ob(normaler[1], 1)
-        indre_punkt_under = self.checker_ib_centered(normaler[0], 0)
-        indre_punkt_over = self.checker_ib_centered(normaler[1], 1)
+        if self.vinkel == 0:
+            ytre_punkt_under = [0, -self.ytre_grenser]
+            ytre_punkt_over = [0, self.ytre_grenser]
+            indre_punkt_under = [0, -5]
+            indre_punkt_over = [0, 5]
+        else:
+            normaler = self.get_normal_lines()
+            ytre_punkt_under = self.checker_ob(normaler[0], 0)
+            ytre_punkt_over = self.checker_ob(normaler[1], 1)
+            indre_punkt_under = self.checker_ib_centered(normaler[0], 0)
+            indre_punkt_over = self.checker_ib_centered(normaler[1], 1)
         list_iterate, list_iterate1 = self.__get_material_list2(ytre_punkt_under, ytre_punkt_over, indre_punkt_under,
                                                                 indre_punkt_over)
         i_material = self.index_materials

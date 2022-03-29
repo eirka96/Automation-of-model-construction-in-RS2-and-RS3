@@ -1,10 +1,10 @@
-# import source.filbehandling.make_objects as mo
-import model_construction_RS2 as mc
+# import Automatisering_RS2.source.filbehandling.make_objects as mo
+from Automatisering_RS2.source.alter_geometry.model_construction import model_construction_RS2 as mc
 import numpy as np
 
 # # her settes parameterene som behøves for å lage modellen
-# vinkel_sone = -90
-# forflytning_x_sone = -4
+# vinkel_sone = 20
+# forflytning_x_sone = 0
 # forflytning_y_sone = 0
 # mektighet_sone = 8
 #
@@ -17,19 +17,16 @@ import numpy as np
 #
 # path_of_RS2_file = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_" \
 #                    r"masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
-#                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100_m2\rs2" \
-#                    r"\S_bm80_ss1_k1_od100_m2_v20_y0_x0\S_bm80_ss1_k1_od100_m2_v20_y0_x0.fea "
+#                    r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler\S_bm80_ss1_k1_od100\rs2" \
+#                    r"\S_bm80_ss1_k1_od100_m8_v20_y0_x0\S_bm80_ss1_k1_od100_m8_v20_y0_x0.fea "
 # path_of_RS2_file = mo.alternate_slash([path_of_RS2_file])[0]
-#
 
 
 def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_RS2_file,
                    ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
                    n_points_tunnel_boundary=364, ytre_grenser_utstrekning=150):
-
     # henter kildefilen til RS2, lagret som .fea
     with open(path_of_RS2_file, 'r') as file:
-        # read a list of lines into data
         data = file.readlines()
     # henter nøkkelelementer i listen data bassert på unike nøkkelord, som blir brukt til å navigere tekseditoren
     index_material_mesh = data.index("materials mesh start:\n") + 3
@@ -37,7 +34,6 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     points_tunnel_boundary0 = data[45753:46117].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
-
     # definerer hvilke punkter i tunnel_boundary som tilhører hvilken matematiske kvadrant.
     fourth_quad = points_tunnel_boundary[0:91]
     first_quad = points_tunnel_boundary[91:182]
@@ -91,7 +87,7 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
             quit()
 
     punkter_ytre = [ytre_bunn_hoyre, ytre_topp_hoyre, ytre_topp_venstre, ytre_bunn_venstre]
-
+    print(punkter_ytre)
     # indre grense, definerer punktene på tunnel_boundary og svakhetssonen
 
     ib = mc.InnerBoundary(ant_linjer_sone, quad, punkter_ytre, data, n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone,
@@ -125,3 +121,8 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     with open(path_of_RS2_file, 'w') as file:
         file.writelines(data)
     return
+
+
+# alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_RS2_file,
+#                ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
+#                n_points_tunnel_boundary=364, ytre_grenser_utstrekning=150)

@@ -59,7 +59,7 @@ def make_file_name(geometri='S'):
             #         path = path.replace((navn + str(df_verdier[navn][i]) + "_"), "")
         path = path[:-1]
         path1 = path
-        path += '.fez'  # denne er eneste forskjellen mellom make_folder_name og make_file_name
+        path += '.fea'  # denne er eneste forskjellen mellom make_folder_name og make_file_name
         path1 += '.csv'
         file_name_rs2_list.append(path)
         file_name_excel_list.append(path1)
@@ -67,7 +67,7 @@ def make_file_name(geometri='S'):
 
 
 # beskrivelsen for denne er identisk med den over bare at denne er tilpasset for mappenavn
-# parameter_verdier_excel har en annen sti og det blir ikke lagt til .fez i enden av navnet.
+# parameter_verdier_excel har en annen sti og det blir ikke lagt til .fea i enden av navnet.
 
 def make_folder_name(geometri='S'):
     parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
@@ -256,20 +256,24 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
                         name_csv_folders):  # tilordner filnavn sine stier. Tomme elementer forblir tomme.
         for file in df_list_path_rs2.index.values:
             if df_name_rs2_files[rs2][file] is not None and df_name_csv_files[csv][file] is not None:
-                df_list_path_rs2.loc[file, rs2] = (path_storage_files + '/' + rs2 + df_name_rs2_files[rs2][file])
-                df_list_path_csv.loc[file, csv] = (path_storage_files + '/' + csv + df_name_csv_files[csv][file])
-                print(df_list_path_rs2[rs2][file])
+                folder_name_rs2 = path_storage_files + '/' + rs2 + df_name_rs2_files[rs2][file].replace('.fea', '')
+                folder_name_csv = path_storage_files + '/' + csv + df_name_csv_files[csv][file].replace('.csv', '')
+                os.mkdir(os.path.join(path_storage_files+rs2, folder_name_rs2))
+                os.mkdir(os.path.join(path_storage_files+csv, folder_name_csv))
+                df_list_path_rs2.loc[file, rs2] = folder_name_rs2 + '/' + df_name_rs2_files[rs2][file]
+                df_list_path_csv.loc[file, csv] = folder_name_csv + '/' + df_name_csv_files[csv][file]
+                # print(df_list_path_rs2[rs2][file])
                 st.copyfile(path_file0_rs2, df_list_path_rs2[rs2][file])
                 pd.DataFrame({}).to_csv(df_list_path_csv[csv][file])
-                path_feaFileMap = df_list_path_rs2[rs2][file].replace(".fez", '')
-                with zipfile.ZipFile(df_list_path_rs2[rs2][file], "r") as zip_ref:  # unzipping the .fez file
-                    zip_ref.extractall(path_feaFileMap)
-                for filename in os.listdir(path_feaFileMap):
-                    extension = pathlib.Path(filename).suffix
-                    print(extension)
-                    source = path_feaFileMap + '/' + filename
-                    destination = path_feaFileMap + '/' + df_name_rs2_files[rs2][file].replace(".fez", '') + extension
-                    os.rename(source, destination)
+                # path_feaFileMap = df_list_path_rs2[rs2][file].replace(".fea", '')
+                # with zipfile.ZipFile(df_list_path_rs2[rs2][file], "r") as zip_ref:  # unzipping the .fea file
+                #     zip_ref.extractall(path_feaFileMap)
+                # for filename in os.listdir(path_feaFileMap):
+                #     extension = pathlib.Path(filename).suffix
+                #     # print(extension)
+                #     source = path_feaFileMap + '/' + filename
+                #     destination = path_feaFileMap + '/' + df_name_rs2_files[rs2][file].replace(".fea", '') + extension
+                #     os.rename(source, destination)
             else:
                 continue
     return df_list_path_rs2, df_list_path_csv
@@ -305,9 +309,11 @@ def get_changing_attributes(path_storage_files, df_path_files, folder_names):
         for file in df_path_files.index.values:
             if df_path_files[folder][file] is None:  # hoppe over tomme plasseringer
                 continue
-            y = path_storage_files + '/' + folder + folder.replace('/rs2/', '') + '_'
-            x = str(df_path_files[folder][file]).replace(y, '')
-            x = x.replace('.fez', '')
+            y = df_path_files[folder][file].rsplit('/', 1)[0] + '/' + folder.replace('/rs2/', '') + '_'
+            # y = path_storage_files + '/' + folder + folder.replace('/rs2/', '') + '_'
+            x = df_path_files[folder][file].replace(y, '')
+            x = x.replace('.fea', '')
+            print(x, y)
             num = []
             char = []
             while len(x) != 0:
@@ -332,17 +338,17 @@ def transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q=10
 
     # rotere
     # df_rot = df_koordinater_mus.copy().iloc[3:]  # koordinater som skal roteres
-    print(df_koordinater_mus)
+    # print(df_koordinater_mus)
     R = np.array([[np.cos(q), -np.sin(q)], [np.sin(q), np.cos(q)]])  # rotasjonsmatrise, mot klokka når vinkel q er +
     r = pd.DataFrame(data=R, index=['x', 'y'])
-    print(r)
+    # print(r)
     # df_koordinater_mus.iloc[2:, 0] -= ox
     # df_koordinater_mus.iloc[2:, 1] -= oy
     df_koordinater_mus.iloc[3:] = df_koordinater_mus.iloc[3:].dot(r)
     # df_koordinater_mus.iloc[2:, 0] += ox
     # df_koordinater_mus.iloc[2:, 1] += oy
     df_koordinater_mus.columns = ['x', 'y']
-    print(df_koordinater_mus)
+    # print(df_koordinater_mus)
 
     # forflytning
     # df_trans = df_rot.copy().iloc[1:]  # koordinater som skal forflyttes

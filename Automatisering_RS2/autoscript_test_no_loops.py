@@ -4,8 +4,10 @@ import numpy as np
 
 from os import path
 from os import mkdir
+from time import sleep
+from subprocess import Popen
 
-import source.filbehandling.make_objects as mo
+import Automatisering_RS2.source.filbehandling.make_objects as mo
 import Automatisering_RS2.source.Auto_handlinger_RS2 as Auto
 
 
@@ -19,7 +21,7 @@ pd.set_option('display.width', None)
 # ha en løkke som går i gjennom hver fil og klargjør for analyse
 # eventuelt lukke alt til slutt
 
-screenWidth, screenHeight = pag.size() # the size of main monitor
+screenWidth, screenHeight = pag.size()  # the size of main monitor
 command = ''
 
 while True:
@@ -48,12 +50,11 @@ if command == 'j':
     # inneholder stien til kildefilen.
     sti_kildefil_rs2 = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
                        r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od500" \
-                       r"\S_bm80_ss1_k1_od500_v0_m2_mal.fez "
+                       r"\S_bm80_ss1_k1_od500_v0_m2_mal\S_bm80_ss1_k1_od500_v0_m2_mal.fea "
     # sti_til_mappe_for_lagring_av_stier:
     # er stien til der hvor alle kopier av kildefilene skal lagres i et mappesystem.
     sti_til_mappe_for_arbeidsfiler = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
-                                     r"\parameterstudie\Mine " \
-                                     r"modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler "
+                                     r"\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler "
     if not path.exists(mo.alternate_slash([sti_til_mappe_for_arbeidsfiler])[0]):
         mkdir(mo.alternate_slash([sti_til_mappe_for_arbeidsfiler])[0])
     # sti_csv_gamle_rs2stier og sti_csv_gamle_csvStier:
@@ -120,32 +121,31 @@ if command == 'j':
     time = [0, 0.7, 1, 2, 5]  # tidsintervall, blir viktig for å sørge for at et steg er ferdig før neste begynner.
 
     # blir en for-løkke her!
-
     path_fil_rs2 = df_stier_rs2filer[mappenavn_til_rs2[1]][1]
     path_fil_csv = df_stier_csvfiler[mappenavn_til_csv[1]][1]
 
     path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
     path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
-    # Popen([path_RS2, path_fil_rs2])
-    # sleep(10)
 
     streng_endringer = df_endrede_attributter_rs2filer[mappenavn_til_rs2[1]][1]
-    print(streng_endringer['v'])
     Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2, 1)
-    #
-    # # pyautogui operasjoner begynner her
+
+    # Popen([path_RS2, path_fil_rs2])
+    # sleep(10)
+    # #
+    # # # pyautogui operasjoner begynner her
     # i = Auto.klargjore_rs2(df_koordinater_mus, l_kol)
     # pag.hotkey('ctrl', 'r', interval=time[0])  # fjerne mesh
     # sleep(1)
-    # # i = Auto.rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
-    # # # sleep(1)
-    # # i = Auto.forflytning_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
+    # # # i = Auto.rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
     # # # # sleep(1)
-    # # i = Auto.skalering_svakhetssone(df_koordinater_mus, l_kol, i)
-    # # sleep(3)
-    # # i = Auto.utgraving(df_koordinater_mus, l_kol, i)
-    # # # sleep(1)
-    #
+    # # # i = Auto.forflytning_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_rs2[1], 1, df_koordinater_mus, l_kol, i)
+    # # # # # sleep(1)
+    # # # i = Auto.skalering_svakhetssone(df_koordinater_mus, l_kol, i)
+    # # # sleep(3)
+    # # # i = Auto.utgraving(df_koordinater_mus, l_kol, i)
+    # # # # sleep(1)
+    # #
     # # # lage diskretisering og mesh
     # pag.hotkey('ctrl', 'm', interval=time[1])
     # sleep(1)
@@ -167,10 +167,10 @@ if command == 'j':
     # # lukke programmet
     # pag.hotkey('ctrl', 's', interval=time[2])
     # pag.hotkey('alt', 'f4', interval=time[1])
-    #
-    #
-    # # data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
-    # #                             # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-    # # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None)
+
+
+    # data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
+    #                             # Logg - Mastergradsoppgave_Modellering, 10.08.2021
+    # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None)
 
 

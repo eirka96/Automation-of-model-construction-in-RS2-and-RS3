@@ -1,5 +1,5 @@
 import pyautogui as pag
-import geometry_operations as go
+from Automatisering_RS2.source.alter_geometry import geometry_operations as go
 
 
 time_list = [0, 0.5, 1, 2, 5]
@@ -33,10 +33,10 @@ def rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_stikatego
 
 def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, j):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
-    vinkel = df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['v']
-    forflytning_x = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['x']
-    forflytning_y = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['y']
-    mektighet = df_endrede_attributter_rs2filer[mappenavn_til_stikategori][j]['m']
+    vinkel = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['v'])
+    forflytning_y = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['y'])
+    forflytning_x = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['x'])
+    mektighet = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['m'])
     go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)
     return
 

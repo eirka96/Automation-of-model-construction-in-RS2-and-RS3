@@ -39,11 +39,25 @@ pd.set_option('display.width', None)
 # returnerer:
 # file_name_list
 
+def get_original_file_paths():
+    l = [25, 100, 200, 300, 500, 800, 1000]
+    sti_kildefil_rs2 = []
+    sti_kildefil_csv = []
+    for i in l:
+        sti_kildefil_rs2.append(
+            r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
+            r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od{}" \
+            r"\S_bm80_ss1_k1_od{}_v0_m2_mal\S_bm80_ss1_k1_od{}_v0_m2_mal.fea ".format(i, i, i))
+        sti_kildefil_csv.append(r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave"
+                                r"\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering"
+                                r"\parameter_verdier_filnavn\S_bm80_ss1_k1_od{}\S_bm80_ss1_k1_od{}.csv ".format(i, i))
+    return sti_kildefil_rs2, sti_kildefil_csv
 
-def make_file_name(geometri='S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
-                            r"\parameterstudie" \
-                            r"\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
+
+def make_file_name(parameter_verdier_csv, geometri='S'):
+    # parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
+    #                         r"\parameterstudie" \
+    #                         r"\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
     file_name_rs2_list = []
@@ -234,36 +248,37 @@ def alternate_slash(list_path):
 # returnerer:
 # navnet til mappene og dataframe med filplasseringene, samt dataframe med filnavnene.
 
-def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
-    path_file0_rs2 = alternate_slash([path_file0_rs2])[0]  # alternate_slash kun laget for å funke på lister
+def copy_and_store(path_file0_rs2, path_storage_files, parameter_verdier_csv, geometri='S'):
+    path_file0_rs2 = [alternate_slash([path])[0] for path in path_file0_rs2]  # alternate_slash kun laget for å funke på lister
     name_rs2_folders, name_csv_folders = get_name_folders(path_storage_files)
     path_storage_files = alternate_slash([path_storage_files])[0]
-    list_rs2_file_names, list_excel_file_names = make_file_name(geometri)
     df_name_rs2_files = pd.DataFrame(columns=name_rs2_folders)
     df_name_csv_files = pd.DataFrame(columns=name_csv_folders)
-    for rs2, csv in zip(name_rs2_folders, name_csv_folders):  # sammenlikner mappenavn med RS2-fil-navn.
+    for rs2, csv, attributes in zip(name_rs2_folders, name_csv_folders, parameter_verdier_csv):  # sammenlikner mappenavn med RS2-fil-navn.
+        list_rs2_file_names, list_csv_file_names = make_file_name(attributes, geometri)
         rs21 = rs2.replace('/rs2/', '')
         res_rs2 = [i for i in list_rs2_file_names if rs21 in i]  # Når det matcher blir filnavnet lagret i kolonna til
         csv1 = csv.replace('/csv/', '')
-        res_csv = [i for i in list_excel_file_names if csv1 in i]
+        res_csv = [i for i in list_csv_file_names if csv1 in i]
         df_name_rs2_files.loc[:, rs2] = pd.Series(res_rs2, dtype=str)  # mappenavnet. Lagres i en dataframe.
         df_name_csv_files.loc[:, csv] = pd.Series(res_csv, dtype=str)
     df_name_rs2_files = df_name_rs2_files.fillna(np.nan).replace([np.nan], [None])  # Tomme elementer får verdien None.
     df_name_csv_files = df_name_csv_files.fillna(np.nan).replace([np.nan], [None])
     df_list_path_rs2 = df_name_rs2_files.copy()  # ved = alene så vil endringer på den ene føre til samme endringer på den andre
     df_list_path_csv = df_name_csv_files.copy()
+    i = 0
     for rs2, csv in zip(name_rs2_folders,
                         name_csv_folders):  # tilordner filnavn sine stier. Tomme elementer forblir tomme.
         for file in df_list_path_rs2.index.values:
             if df_name_rs2_files[rs2][file] is not None and df_name_csv_files[csv][file] is not None:
                 folder_name_rs2 = path_storage_files + '/' + rs2 + df_name_rs2_files[rs2][file].replace('.fea', '')
                 folder_name_csv = path_storage_files + '/' + csv + df_name_csv_files[csv][file].replace('.csv', '')
-                os.mkdir(os.path.join(path_storage_files+rs2, folder_name_rs2))
-                os.mkdir(os.path.join(path_storage_files+csv, folder_name_csv))
+                os.mkdir(os.path.join(path_storage_files + rs2, folder_name_rs2))
+                os.mkdir(os.path.join(path_storage_files + csv, folder_name_csv))
                 df_list_path_rs2.loc[file, rs2] = folder_name_rs2 + '/' + df_name_rs2_files[rs2][file]
                 df_list_path_csv.loc[file, csv] = folder_name_csv + '/' + df_name_csv_files[csv][file]
                 # print(df_list_path_rs2[rs2][file])
-                st.copyfile(path_file0_rs2, df_list_path_rs2[rs2][file])
+                st.copyfile(path_file0_rs2[i], df_list_path_rs2[rs2][file])
                 pd.DataFrame({}).to_csv(df_list_path_csv[csv][file])
                 # path_feaFileMap = df_list_path_rs2[rs2][file].replace(".fea", '')
                 # with zipfile.ZipFile(df_list_path_rs2[rs2][file], "r") as zip_ref:  # unzipping the .fea file
@@ -276,6 +291,7 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
                 #     os.rename(source, destination)
             else:
                 continue
+        i += 1
     return df_list_path_rs2, df_list_path_csv
 
 
@@ -302,18 +318,15 @@ def copy_and_store(path_file0_rs2, path_storage_files, geometri='S'):
 # returnerer:
 # df_marker_of_change
 
-def get_changing_attributes(path_storage_files, df_path_files, folder_names):
-    path_storage_files = alternate_slash([path_storage_files])[0]
+def get_changing_attributes(df_path_files, folder_names):
     df_marker_of_change = df_path_files.copy()  # copy for at lhs blir uavhengig av rhs
     for folder in folder_names:
         for file in df_path_files.index.values:
             if df_path_files[folder][file] is None:  # hoppe over tomme plasseringer
                 continue
             y = df_path_files[folder][file].rsplit('/', 1)[0] + '/' + folder.replace('/rs2/', '') + '_'
-            # y = path_storage_files + '/' + folder + folder.replace('/rs2/', '') + '_'
             x = df_path_files[folder][file].replace(y, '')
             x = x.replace('.fea', '')
-            print(x, y)
             num = []
             char = []
             while len(x) != 0:
@@ -324,6 +337,7 @@ def get_changing_attributes(path_storage_files, df_path_files, folder_names):
                 num.append(num1)
                 x = x[2]
             attributes = pd.Series(data=num, name='values', index=char)
+            print(attributes)
             df_marker_of_change.at[file, folder] = attributes
     return df_marker_of_change
 

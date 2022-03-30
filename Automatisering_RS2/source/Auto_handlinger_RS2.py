@@ -31,12 +31,13 @@ def rotere_svakhetssone(df_endrede_attributter_rs2filer, mappenavn_til_stikatego
     return i
 
 
-def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, j):
+def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, i,  j):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
-    vinkel = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['v'])
-    forflytning_y = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['y'])
-    forflytning_x = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['x'])
-    mektighet = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[j]][j]['m'])
+    vinkel = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
+    forflytning_y = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
+    forflytning_x = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['x'])
+    mektighet = int(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
+    print(vinkel, forflytning_x, forflytning_y, mektighet)
     go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)
     return
 

@@ -4,8 +4,8 @@ import numpy as np
 
 from os import path
 from os import mkdir
-from time import sleep
-from subprocess import Popen
+# from time import sleep
+# from subprocess import Popen
 
 import Automatisering_RS2.source.filbehandling.make_objects as mo
 import Automatisering_RS2.source.Auto_handlinger_RS2 as Auto

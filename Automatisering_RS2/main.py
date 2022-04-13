@@ -1,3 +1,4 @@
+import psutil
 import pyautogui as pag
 import pandas as pd
 import numpy as np
@@ -9,7 +10,6 @@ from subprocess import Popen
 
 import Automatisering_RS2.source.filbehandling.make_objects as mo
 import Automatisering_RS2.source.Auto_handlinger_RS2 as Auto
-
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -24,6 +24,11 @@ pd.set_option('display.width', None)
 screenWidth, screenHeight = pag.size()  # the size of main monitor
 command = ''
 
+rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
+y_attributes, x_attributes = 80, 1, 1, 500, [3, 5.5, 0.5], 22.5, 0, [5, 8, 1]
+
+ant_parametere_interpret = 2
+parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
 while True:
     try:
         command = input('Kjøre script? j for ja: ')
@@ -48,13 +53,19 @@ if command == 'j':
 
     # sti_kildefil:
     # inneholder stien til kildefilen.
-    sti_kildefil_rs2, sti_kildefil_csv = mo.get_original_file_paths()
+    sti_kildefil_rs2, sti_kildefil_csv = mo.get_file_paths_batch()
+
     # sti_til_mappe_for_lagring_av_stier:
     # er stien til der hvor alle kopier av kildefilene skal lagres i et mappesystem.
     sti_til_mappe_for_arbeidsfiler = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
                                      r"\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\arbeidsfiler "
+    sti_til_mapper_endelige_filer = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
+                                     r"\parameterstudie\Mine modeller\RS2\tverrsnitt_sirkulær\sluttprodukt "
     if not path.exists(mo.alternate_slash([sti_til_mappe_for_arbeidsfiler])[0]):
         mkdir(mo.alternate_slash([sti_til_mappe_for_arbeidsfiler])[0])
+    if not path.exists(mo.alternate_slash([sti_til_mapper_endelige_filer])[0]):
+        mkdir(mo.alternate_slash([sti_til_mapper_endelige_filer])[0])
+
     # sti_csv_gamle_rs2stier og sti_csv_gamle_csvStier:
     # er stien til .csv-fil der stier til kopier fra forrige gjennomkjøring er lagret.
     # Denne brukes hvis man ønsker å slette forrige forsøk.
@@ -73,7 +84,7 @@ if command == 'j':
 
     # mappenavn_til_rs2/csv:
     # inneholder navnene til kolonnene i df_gamle/nye_rs2/csvfiler og df_stier_rs2/csvfiler
-    mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mappe_for_arbeidsfiler)
+    mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mapper_endelige_filer)
     # df_stier_rs2filer vil enten inneholde stiene til de gamle eller de nye stiene til rs2filene
     # avhengig av ønske.
     df_stier_rs2filer = df_gamle_stier_rs2filer.copy()
@@ -85,13 +96,14 @@ if command == 'j':
                 # I create_folders:
                 # vil mapper fra forrige prosjekt eventuelt bli slettet og mappene
                 # til det nye prosjekt blir laget hvis dette er tilfelle
-                mo.delete_and_create_folders(sti_til_mappe_for_arbeidsfiler)
-                mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mappe_for_arbeidsfiler)
+                mo.delete_and_create_folders(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer)
+                mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mapper_endelige_filer)
                 # copy_and_store:
                 # lager alle kopiene av kildefilene og lagrer filene i rett mappe.
                 # Dette gjøres ved å bruke mappenavn og filnavn som markør.
-                df_nye_stier_rs2filer, df_nye_stier_csvfiler = mo.copy_and_store(sti_kildefil_rs2,
-                                                                                 sti_til_mappe_for_arbeidsfiler, sti_kildefil_csv)
+                df_nye_stier_rs2filer, df_nye_stier_csvfiler = mo.copy_and_store0(sti_kildefil_rs2,
+                                                                                  sti_til_mappe_for_arbeidsfiler,
+                                                                                  sti_til_mapper_endelige_filer, sti_kildefil_csv)
                 # to_csv:
                 # Her blir alle stiene til de nylagete rs2-filene lagret.
                 df_nye_stier_rs2filer.to_csv(mo.alternate_slash([sti_csv_gamle_rs2stier])[0], sep=';')
@@ -115,48 +127,104 @@ if command == 'j':
     # beskriver hvor stor endringen er.
     df_endrede_attributter_rs2filer = mo.get_changing_attributes(df_stier_rs2filer,
                                                                  mappenavn_til_rs2)
-
     time = [0, 0.7, 1, 2, 5]  # tidsintervall, blir viktig for å sørge for at et steg er ferdig før neste begynner.
 
     # blir en for-løkke her!
     path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
     # path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
     i = 0
+    indices_to_check = []
+    list_differences = mo.make_container_diff(mappenavn_til_rs2)
     for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-
+        for j in range(df_stier_rs2filer.shape[0]):
+            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+            path_fil_csv = df_stier_csvfiler[navn_csv][j]
+            print(path_fil_rs2)
+            print(path_fil_csv)
+            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+                streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
+                indices = Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2, i, j)
+                indices_to_check.append(indices)
+        i += 1
+    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
         for j in range(df_stier_rs2filer.shape[0]):
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
-                streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
-                print(streng_endringer)
-                Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2, i,  j)
-
-                # Popen([path_RS2, path_fil_rs2])
-                # sleep(5)
-                # # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
-                # # pyautogui operasjoner begynner her
-                # # i = Auto.klargjore_rs2(df_koordinater_mus, navn_kol_df_koord_mus)
-                # pag.hotkey('alt', 'f4', interval=time[1])
-                # # lage diskretisering og mesh
-                # pag.hotkey('ctrl', 'm', interval=time[1])
-                # # kalkulere
-                # # pag.hotkey('ctrl', 's', interval=time[2])
-                # # pag.hotkey('ctrl', 't', interval=time[1])
-                # # sleep(10)
-                # #
-                # # # åpne interpret
-                # # pag.hotkey('ctrl', 'shift', 'i', interval=time[4])
-                # # sleep(15)
-                # # # hente ut resultater og lagre i csv
-                # # Auto.interpret_resultat_til_clipboard(time)
-                # # data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
-                # # # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-                # # data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None) # data lagres i respektiv csv
-                # # # lukke interpret
-                # # pag.hotkey('alt', 'f4', interval=time[3])
-                #
+                Popen([path_RS2, path_fil_rs2])
+                sleep(7)
+                # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
+                # pyautogui operasjoner begynner her
+                pag.leftClick(927, 490, interval=time[1])
+                pag.hotkey('alt', 'f4', interval=time[1])
+                # lage diskretisering og mesh
+                pag.hotkey('ctrl', 'm', interval=time[1])
+                pag.hotkey('ctrl', 's', interval=time[1])
+                pag.hotkey('alt', 'f4', interval=time[1])
+                # pag.hotkey('ctrl', 't', interval=time[1])
+                # pag.hotkey('ctrl', 'enter', interval=time[1])
+                # sleep(25)
+    while True:
+        try:
+            command = input('fortsette script? j for ja: ')
+            if command == 'j':
+                break
+            elif command == 'n':
+                break
+            else:
+                print('j for ja din nisse!')
+        except NameError:
+            print('implementert verdi ukjent')
+            continue
+    # kalkulere
+    path_RS2_Compute = r"C:\Program Files\Rocscience\RS2\feawin.exe "
+    Popen([path_RS2_Compute])
+    sleep(5)
+    Auto.handlinger_kalkulasjon()
+    # lukke RS2 Compute
+    pag.hotkey('alt', 'f4', interval=time[2])
+    # åpne interpret
+    path_RS2_interpret = r"C:\Program Files\Rocscience\RS2\Interpret.exe "
+    i = 0
+    k = 0
+    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+        for j in range(df_stier_rs2filer.shape[0]):
+            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+            path_fil_csv = df_stier_csvfiler[navn_csv][j]
+            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+                Popen([path_RS2_interpret, path_fil_rs2])
+                sleep(7)
+                i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
+                pag.hotkey('f6', interval=time[2])
+                for k in range(ant_parametere_interpret):
+                    navn_parameter = parameter_navn_interpret[k]
+                    i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,
+                                                  navn_parameter, i)
+                #markere slutten på fila
+                sr = pd.DataFrame(['end'])
+                sr.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)
+                # lukke interpret
+                pag.hotkey('alt', 'f4', interval=time[3])
+                pag.press('enter', interval=time[2])
                 # # lukke programmet
                 # pag.hotkey('ctrl', 's', interval=time[1])
                 # pag.hotkey('alt', 'f4', interval=time[1])
-        i += 1
+                i = 0
+        k += 1
+    k = 0
+    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+        for j in range(df_stier_rs2filer.shape[0]):
+            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+            path_fil_csv = df_stier_csvfiler[navn_csv][j]
+            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+                indices = indices_to_check[j]
+                parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
+                to_plot = mo.get_parameter_to_plot(path_fil_csv, parameter_navn_interpret0)
+                differences = mo.get_difference(to_plot, indices)
+                if differences is not None:
+                    list_differences[k].append(differences)
+                # mo.plot_data(to_plot, parameter_navn_interpret)
+        paths_fil_rs2 = df_stier_rs2filer[navn_rs2]
+        mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret, paths_fil_rs2,
+                                 sti_til_mappe_for_arbeidsfiler)
+        k += 1

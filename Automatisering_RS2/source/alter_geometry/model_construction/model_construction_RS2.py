@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import matplotlib.path as mplt_path
+from sympy import Point, Segment, Circle, sympify
 # import Automatisering_RS2.source.filbehandling.make_objects as mo
 
 
@@ -10,10 +11,12 @@ def prepare_angel(angel):
             angel = angel % 360
         else:
             angel = 0
-    if 89.99999 < angel < 90.00001 or -89.99999 > angel > -90.00001:
-        angel = 89.99999
-    elif 269.99999 < angel < 270.00001 or -269.99999 > angel > -270.00001:
-        angel = 269.99999
+    if 89.9 < angel < 90.1 or -89.9 > angel > -90.1:
+        angel = 89.9
+    elif 179.9 < angel < 180.1 or -179.9 > angel > -180.1:
+        angel = 179.9
+    elif 269.9 < angel < 270.1 or -269.9 > angel > -270.1:
+        angel = 269.9
     return angel
 
 
@@ -116,6 +119,46 @@ class InnerBoundary:
                  self.punkter_ytre[indices_points_outer_boundary[0]][0]
         return a_line, b_line
 
+    def get_tunnel_esc_circle_sympy(self):
+        dia = self.diameter
+        if isinstance(self.diameter, float):
+            dia = sympify('{}'.format(dia), rational=True)
+        circle = Circle((0, 0), dia)
+        return circle
+
+    def get_outerboundary_line_seg_sympy(self, element):
+        indices_points_outer_boundary = self.get_indices_outer_boundary(element)
+        point_left = Point(self.punkter_ytre[indices_points_outer_boundary[1]][0],
+                           self.punkter_ytre[indices_points_outer_boundary[1]][1])
+        point_right = Point(self.punkter_ytre[indices_points_outer_boundary[0]][0],
+                            self.punkter_ytre[indices_points_outer_boundary[0]][1])
+        seg = Segment(point_left, point_right)
+        return seg
+
+    @staticmethod
+    def is_line_inside_circle_sympy(seg, circle):
+        if circle.intersection(seg):
+            return True
+        else:
+            return False
+
+    def is_line_inside_circle(self, a_line, b_line):
+        epsilon = 10**-13
+        a = a_line ** 2 + 1
+        b = 2 * a_line * b_line
+        c = b_line ** 2 - self.diameter ** 2 / 4
+        test = b**2 - 4*a*c
+        if test > epsilon:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def calculate_inner_points_sympy(seg, circle):
+        a, b = circle.intersection(seg)
+        a, b = list(a), list(b)
+        return b, a
+
     def calculate_inner_points(self, a_line, b_line):
         a = a_line ** 2 + 1
         b = 2 * a_line * b_line
@@ -134,6 +177,13 @@ class InnerBoundary:
         points = [point_pos, point_neg]
         return points
 
+    def get_theoretical_inner_points_sympy(self, element):
+        seg = self.get_outerboundary_line_seg_sympy(element)
+        circle = self.get_tunnel_esc_circle_sympy()
+        point_pos, point_neg = self.calculate_inner_points_sympy(seg, circle)
+        points = [point_pos, point_neg]
+        return points
+
     def calculate_intersection(self, punkt, element):
         quad_index = self.get_quad_index(punkt)
         index_lowest_diff = self.get_index_lowest_diff_points(quad_index, punkt)
@@ -149,14 +199,27 @@ class InnerBoundary:
         point = [x, y]
         return point
 
+    def calculate_intersection_sympy(self, punkt, element):
+        seg_line = self.get_outerboundary_line_seg_sympy(element)
+        quad_index = self.get_quad_index(punkt)
+        index_lowest_diff = self.get_index_lowest_diff_points(quad_index, punkt)
+        p_circ0 = Point(self.nth_quad[quad_index][index_lowest_diff[1]][0],
+                        self.nth_quad[quad_index][index_lowest_diff[1]][1])
+        p_circ1 = Point(self.nth_quad[quad_index][index_lowest_diff[0]][0],
+                        self.nth_quad[quad_index][index_lowest_diff[0]][1])
+        seg_circ = Segment(p_circ0, p_circ1)
+        point = seg_circ.intersection(seg_line)
+        return point
+
     def get_points_on_circular_boundary_2(self):
         points = []
         k = [3, 1]
-        path = mplt_path.Path(self.points_tunnel_boundary)
+        # path = mplt_path.Path(self.points_tunnel_boundary)
         for i in range(self.ant_linjer):
-            inside = path.contains_point(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
-                                          (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
-            if inside:
+            # inside = path.contains_point(((self.punkter_ytre[i][0] + self.punkter_ytre[i + k[i]][0]) / 2,
+            #                               (self.punkter_ytre[i][1] + self.punkter_ytre[i + k[i]][1]) / 2))
+            a, b = self.get_linfunc_outer_boundary(i)
+            if self.is_line_inside_circle(a, b):
                 points_theoretical = self.get_theoretical_inner_points(i)
                 point = self.calculate_intersection(points_theoretical[0], i)
                 point1 = self.calculate_intersection(points_theoretical[1], i)
@@ -170,12 +233,32 @@ class InnerBoundary:
         points = [p[0], p[2], p[3], p[1]]
         return points
 
+    def get_points_on_circular_boundary_sympy(self):
+        points = []
+        k = [3, 1]
+        circle = self.get_tunnel_esc_circle_sympy()
+        for i in range(self.ant_linjer):
+            seg = self.get_outerboundary_line_seg_sympy(i)
+            if self.is_line_inside_circle_sympy(seg, circle):
+                points_theoretical = self.get_theoretical_inner_points_sympy(i)
+                point = self.calculate_intersection_sympy(points_theoretical[0], i)
+                point1 = self.calculate_intersection_sympy(points_theoretical[1], i)
+                points.append(point)
+                points.append(point1)
+            else:
+                point, point1 = None, None
+                points.append(point)
+                points.append(point1)
+        p = points.copy()
+        points = [p[0], p[2], p[3], p[1]]
+        return points
+
     def get_start_quad(self, punkt):
         switcher = {
             '4th quad': 0,
-            '1st quad': 91,
-            '2nd quad': 182,
-            '3rd quad': 273,
+            '1st quad': 90,
+            '2nd quad': 180,
+            '3rd quad': 270,
         }
         return switcher.get(self.which_quad(punkt), None)
 
@@ -211,6 +294,15 @@ class InnerBoundary:
                                                                                      self.data[
                                                                                          self.index_boundary1 + self.n_points_ib + 10 + index])
         return
+
+    def get_index_inner_points(self, tunnel_boundary_points):
+        points = self.get_points_on_circular_boundary_2()
+        points = [value for value in points if value is not None]
+        indices = []
+        for point in points:
+            idx = tunnel_boundary_points.index(point)
+            indices.append(idx)
+        return indices
 
 
 class OuterBoundary:
@@ -476,11 +568,13 @@ class BoundaryLines:
 class Materials(InnerBoundary):
     def __init__(self, index_materials, punkter_indre, ytre_grenser_utstrekning, ant_linjer, nth_quad, punkter_ytre, data,
                  number_points_inner_boundary, index_boundary1,
-                 diameter, vinkel, points_tunnel_boundary):
+                 diameter, vinkel, points_tunnel_boundary, forflytning_y_sone, forflytning_x_sone):
         super().__init__(ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
                          diameter, vinkel, points_tunnel_boundary, ytre_grenser_utstrekning,)
         self.index_materials = index_materials
         self.punkter_indre = punkter_indre.copy()
+        self.forflytning_y_sone = forflytning_y_sone
+        self.forflytning_x_sone = forflytning_x_sone
 
     def setmaterialmesh(self):
         if all(points is None for points in self.punkter_indre):
@@ -494,7 +588,8 @@ class Materials(InnerBoundary):
     def __setmaterialmesh0(self):
         del self.data[self.index_materials + 36:self.index_materials + 63]
         i_material = self.index_materials
-        normaler = self.get_normal_lines()
+        mid_points = self.get_middle_points()
+        normaler = self.get_normal_lines(mid_points)
         ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
         print(ytre_punkt_over, ytre_punkt_under)
         list_iterate, list_iterate1 = self.__get_material_list0(ytre_punkt_under, ytre_punkt_over)
@@ -523,7 +618,10 @@ class Materials(InnerBoundary):
                  [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
                  [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
                  [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
-        list1 = [[15, 15], [15, 15], [16, 16], [15, 0]]
+        if self.forflytning_x_sone == 0 and self.forflytning_y_sone == 0:
+            list1 = [[15, 15], [15, 15], [16, 16], [16, 0]]
+        else:
+            list1 = [[15, 15], [15, 15], [16, 16], [15, 0]]
         return list0, list1
 
     def __setmaterialmesh1(self):
@@ -536,8 +634,8 @@ class Materials(InnerBoundary):
             else:
                 punkt_i_sone, punkt_u_sone = [0, -5], [0, 5]
         else:
-            normaler = self.get_normal_lines()
             middlepoints = self.get_middle_points()
+            normaler = self.get_normal_lines(middlepoints)
             under, over = middlepoints[0], middlepoints[1]
             if self.origo_is_between(under, over):
                 ytre_punkt_under = self.checker_ob(normaler[0], 0)
@@ -602,6 +700,14 @@ class Materials(InnerBoundary):
                        (self.punkter_ytre[element][1] + self.punkter_ytre[element + k[element]][1]) / 2)
         return middlepoint
 
+    def get_middle_points_inner(self):
+        p = []
+        k = [3, 1]
+        for i in range(self.ant_linjer):
+            p.append(((self.punkter_indre[i][0] + self.punkter_indre[i + k[i]][0]) / 2,
+                      (self.punkter_indre[i][1] + self.punkter_indre[i + k[i]][1]) / 2))
+        return p
+
     @staticmethod
     def get_normal_line(a0, midpoint):
         a, b = -(1 / a0), midpoint[1] + (midpoint[0] / a0)
@@ -624,8 +730,7 @@ class Materials(InnerBoundary):
             return False
         return True
 
-    def get_normal_lines(self):
-        mid_points = self.get_middle_points()
+    def get_normal_lines(self, mid_points):
         a0, b0 = self.get_linfunc_outer_boundary(0)
         normal_under = self.get_normal_line(a0, mid_points[0])
         c0, d0 = self.get_linfunc_outer_boundary(1)
@@ -649,6 +754,50 @@ class Materials(InnerBoundary):
         check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
         point = point[0]
         return point
+
+    def checker_ob0(self, normal):
+        under = 0
+        over = 1
+        middlepoint_under = self.get_middle_point(under)
+        middlepoint_over = self.get_middle_point(over)
+        points_under = [[self.ytre_grenser, normal[under][0] * self.ytre_grenser + normal[under][1]],
+                        [(self.ytre_grenser - normal[under][1])/normal[under][0], self.ytre_grenser],
+                        [-self.ytre_grenser, normal[under][0] * -self.ytre_grenser + normal[under][1]],
+                        [(-self.ytre_grenser - normal[under][1])/normal[under][0], -self.ytre_grenser]]
+        points_over = [[self.ytre_grenser, normal[over][0] * self.ytre_grenser + normal[over][1]],
+                       [(self.ytre_grenser - normal[over][1])/normal[over][0], self.ytre_grenser],
+                       [-self.ytre_grenser, normal[over][0] * -self.ytre_grenser + normal[over][1]],
+                       [(-self.ytre_grenser - normal[over][1])/normal[over][0], -self.ytre_grenser]]
+        check_under = [np.sqrt((points_under[0][0] - middlepoint_under[0]) ** 2 + (points_under[0][1] - middlepoint_under[1]) ** 2),
+                       np.sqrt((points_under[1][0] - middlepoint_under[0]) ** 2 + (points_under[1][1] - middlepoint_under[1]) ** 2),
+                       np.sqrt((points_under[2][0] - middlepoint_under[0]) ** 2 + (points_under[2][1] - middlepoint_under[1]) ** 2),
+                       np.sqrt((points_under[3][0] - middlepoint_under[0]) ** 2 + (points_under[3][1] - middlepoint_under[1]) ** 2)]
+        check_over = [np.sqrt((points_over[0][0] - middlepoint_over[0]) ** 2 + (points_over[0][1] - middlepoint_over[1]) ** 2),
+                      np.sqrt((points_over[1][0] - middlepoint_over[0]) ** 2 + (points_over[1][1] - middlepoint_over[1]) ** 2),
+                      np.sqrt((points_over[2][0] - middlepoint_over[0]) ** 2 + (points_over[2][1] - middlepoint_over[1]) ** 2),
+                      np.sqrt((points_over[3][0] - middlepoint_over[0]) ** 2 + (points_over[3][1] - middlepoint_over[1]) ** 2)]
+        check_under, points_under = [list(t) for t in zip(*sorted(zip(check_under, points_under)))]
+        check_over, points_over = [list(t) for t in zip(*sorted(zip(check_over, points_over)))]
+        p, q, r, s = [], [], [], []
+        for i in range(len(points_under)):
+            if abs(points_under[i][0]) <= self.ytre_grenser and abs(points_under[i][1]) <= self.ytre_grenser:
+                p.append(points_under[i])
+                q.append(check_under[i])
+            if abs(points_over[i][0]) <= self.ytre_grenser and abs(points_over[i][1]) <= self.ytre_grenser:
+                r.append(points_over[i])
+                s.append(check_over[i])
+        points_under, check_under, points_over, check_over = p, q, r, s
+        if self.origo_is_between(middlepoint_under, middlepoint_over):
+            point_under = points_under[0]
+            point_over = points_over[0]
+        else:
+            if check_under[0] < check_over[0]:
+                point_under = points_under[0]
+                point_over = points_over[1]
+            else:
+                point_under = points_under[1]
+                point_over = points_over[0]
+        return point_under, point_over
 
     def checker_ob_exl_innerb(self, normal):
         under = 0
@@ -693,19 +842,47 @@ class Materials(InnerBoundary):
 
         return point_weakness, point_exl_weakness
 
-    def checker_ib_centered(self, normal, element):
-        middlepoint = self.get_middle_point(element)
-        point_pos, point_neg = self.calculate_inner_points(normal[0], normal[1])
-        points = [point_pos, point_neg]
-        q = self.calculate_intersection_ib(point_pos, normal)
-        p = self.calculate_intersection_ib(point_neg, normal)
-        check = [np.sqrt((q[0] - middlepoint[0]) ** 2 + (q[1] - middlepoint[1]) ** 2),
-                 np.sqrt((p[0] - middlepoint[0]) ** 2 + (p[1] - middlepoint[1]) ** 2)]
-        check, point = [list(t) for t in zip(*sorted(zip(check, points)))]
+    def checker_ib_centered(self, normal):
+        under, over = 0, 1
+        middlepoints = self.get_middle_points_inner()
+        middlepoint_under, middlepoint_over = middlepoints[0], middlepoints[1]
+        point_pos_under, point_neg_under = self.calculate_inner_points(normal[under][0], normal[under][1])
+        point_pos_over, point_neg_over = self.calculate_inner_points(normal[over][0], normal[over][1])
+        points_under = [point_pos_under, point_neg_under]
+        points_over = [point_pos_over, point_neg_over]
+        q = self.calculate_intersection_ib(points_under[0], normal[under])
+        p = self.calculate_intersection_ib(points_under[1], normal[under])
+        r = self.calculate_intersection_ib(points_over[0], normal[over])
+        s = self.calculate_intersection_ib(points_over[1], normal[over])
+        # check_under = [np.sqrt((q[0] - middlepoint_under[0]) ** 2 + (q[1] - middlepoint_under[1]) ** 2),
+        #                np.sqrt((p[0] - middlepoint_under[0]) ** 2 + (p[1] - middlepoint_under[1]) ** 2)]
+        # check_over = [np.sqrt((r[0] - middlepoint_over[0]) ** 2 + (r[1] - middlepoint_over[1]) ** 2),
+        #               np.sqrt((s[0] - middlepoint_over[0]) ** 2 + (s[1] - middlepoint_over[1]) ** 2)]
+        # check_under, points_under = [list(t) for t in zip(*sorted(zip(check_under, points_under)))]
+        # check_over, points_over = [list(t) for t in zip(*sorted(zip(check_over, points_over)))]
+        origo = Point(0, 0)
+        mid_under = Point(middlepoint_under[0], middlepoint_under[1])
+        mid_over = Point(middlepoint_over[0], middlepoint_over[1])
+        point_check11 = Point(q[0], q[1])
+        # Point_check12 = Point(p[0], p[1])
+        point_check21 = Point(r[0], r[1])
+        # Point_check22 = Point(s[0], s[1])
+        seg_middle = Segment(mid_under, mid_over)
+        seg_check11 = Segment(origo, point_check11)
+        # seg_check12 = Segment(origo, Point_check12)
+        seg_check21 = Segment(origo, point_check21)
+        # seg_check22 = Segment(origo, Point_check22)
 
-        point = point[0]
-        print(point)
-        return point
+        if self.origo_is_between(middlepoint_under, middlepoint_over):
+            point_under = points_under[0]
+            point_over = points_over[0]
+        elif seg_check11.contains(seg_middle) or seg_check21.contains(seg_middle):
+            point_under = points_under[1]
+            point_over = points_over[0]
+        else:
+            point_under = points_under[0]
+            point_over = points_over[1]
+        return point_under, point_over
 
     def calculate_intersection_ib(self, punkt, normal):
         quad_index = self.get_quad_index(punkt)
@@ -739,11 +916,10 @@ class Materials(InnerBoundary):
             indre_punkt_under = [0, -5]
             indre_punkt_over = [0, 5]
         else:
-            normaler = self.get_normal_lines()
-            ytre_punkt_under = self.checker_ob(normaler[0], 0)
-            ytre_punkt_over = self.checker_ob(normaler[1], 1)
-            indre_punkt_under = self.checker_ib_centered(normaler[0], 0)
-            indre_punkt_over = self.checker_ib_centered(normaler[1], 1)
+            mid_points = self.get_middle_points_inner()
+            normaler = self.get_normal_lines(mid_points)
+            ytre_punkt_under, ytre_punkt_over = self.checker_ob0(normaler)
+            indre_punkt_under, indre_punkt_over = self.checker_ib_centered(normaler)
         list_iterate, list_iterate1 = self.__get_material_list2(ytre_punkt_under, ytre_punkt_over, indre_punkt_under,
                                                                 indre_punkt_over)
         i_material = self.index_materials

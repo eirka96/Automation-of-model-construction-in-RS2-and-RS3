@@ -2,11 +2,11 @@
 from Automatisering_RS2.source.alter_geometry.model_construction import model_construction_RS2 as mc
 import numpy as np
 
-# # her settes parameterene som behøves for å lage modellen
-# vinkel_sone = 20
-# forflytning_x_sone = 0
+# her settes parameterene som behøves for å lage modellen
+# vinkel_sone = 22.5
+# forflytning_x_sone = -3
 # forflytning_y_sone = 0
-# mektighet_sone = 8
+# mektighet_sone = 4.0
 #
 # vinkel_sone = mc.prepare_angel(vinkel_sone)
 # ant_pkt_sone_ytre = 4
@@ -24,28 +24,28 @@ import numpy as np
 
 def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_RS2_file,
                    ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
-                   n_points_tunnel_boundary=364, ytre_grenser_utstrekning=150):
+                   n_points_tunnel_boundary=360, ytre_grenser_utstrekning=150):
     # henter kildefilen til RS2, lagret som .fea
     with open(path_of_RS2_file, 'r') as file:
         data = file.readlines()
     # henter nøkkelelementer i listen data bassert på unike nøkkelord, som blir brukt til å navigere tekseditoren
     index_material_mesh = data.index("materials mesh start:\n") + 3
     index_boundary1 = data.index("  boundary 1 start:\n") + 6
-    points_tunnel_boundary0 = data[45753:46117].copy()
+    points_tunnel_boundary0 = data[45753:46113].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
     # definerer hvilke punkter i tunnel_boundary som tilhører hvilken matematiske kvadrant.
-    fourth_quad = points_tunnel_boundary[0:91]
-    first_quad = points_tunnel_boundary[91:182]
-    second_quad = points_tunnel_boundary[182:273]
-    third_quad = points_tunnel_boundary[273:364]
+    fourth_quad = points_tunnel_boundary[0:90]
+    first_quad = points_tunnel_boundary[90:180]
+    second_quad = points_tunnel_boundary[180:270]
+    third_quad = points_tunnel_boundary[270:359]
     quad = (fourth_quad, first_quad, second_quad, third_quad)
 
     # mektighet, legges til før forflytning og rotasjon, og endrer kun y-verdi siden sonen i utgangspunktet er horisontal
     x_hoyre = ytre_grenser_utstrekning
     x_venstre = -ytre_grenser_utstrekning
     y_topp = mektighet_sone / 2
-    y_bunn = -mektighet_sone/ 2
+    y_bunn = -mektighet_sone / 2
 
     # definerer svakhetssonen basert på de ytre grensebetingelsene:
 
@@ -87,7 +87,6 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
             quit()
 
     punkter_ytre = [ytre_bunn_hoyre, ytre_topp_hoyre, ytre_topp_venstre, ytre_bunn_venstre]
-    print(punkter_ytre)
     # indre grense, definerer punktene på tunnel_boundary og svakhetssonen
 
     ib = mc.InnerBoundary(ant_linjer_sone, quad, punkter_ytre, data, n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone,
@@ -113,14 +112,17 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     points_tunnel_boundary0 = data[45753:45753+ib.n_points_ib].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
+    # indekser der data skal hentes ut blir her bestemt, returneres til main
+    indices_to_check = ib.get_index_inner_points(points_tunnel_boundary)
     # endre materials mesh i kildekoden til RS2, element 1
     mls = mc.Materials(index_material_mesh, punkter_indre, ytre_grenser_utstrekning, ant_linjer_sone, quad, punkter_ytre, data,
-                       n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone, points_tunnel_boundary)
+                       n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone, points_tunnel_boundary,
+                       forflytning_y_sone, forflytning_x_sone)
     mls.setmaterialmesh()
     # and write everything back
     with open(path_of_RS2_file, 'w') as file:
         file.writelines(data)
-    return
+    return indices_to_check
 
 
 # alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_RS2_file,

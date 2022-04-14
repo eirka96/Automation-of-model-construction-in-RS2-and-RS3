@@ -26,6 +26,8 @@ def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til
     vinkel = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
     forflytning_x = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['x'])
+    if forflytning_x == 1.0:
+        forflytning_x = 0.99
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
     print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
     indices_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)

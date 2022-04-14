@@ -873,10 +873,10 @@ class Materials(InnerBoundary):
         seg_check21 = Segment(origo, point_check21)
         # seg_check22 = Segment(origo, Point_check22)
 
-        if self.origo_is_between(middlepoint_under, middlepoint_over):
-            point_under = points_under[0]
-            point_over = points_over[0]
-        elif seg_check11.contains(seg_middle) or seg_check21.contains(seg_middle):
+        # if self.origo_is_between(middlepoint_under, middlepoint_over):
+        #     point_under = points_under[0]
+        #     point_over = points_over[0]
+        if seg_check11.contains(seg_middle) or seg_check21.contains(seg_middle):
             point_under = points_under[1]
             point_over = points_over[0]
         else:

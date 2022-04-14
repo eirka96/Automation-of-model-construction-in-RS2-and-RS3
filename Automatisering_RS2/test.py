@@ -132,7 +132,7 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
 
 
 path_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
-rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, y_attributes, x_attributes = 80, 1, 1, 500, 5, 22.5, 0, 1
+rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, y_attributes, x_attributes = 80, 1, 1, 500, [0.5, 5.5, 0.5], 22.5, 0, [-7, 8, 1]
 set_model_csv_attributes_batch(path_csv, rock_mass_material, weakness_zone_material, stress_ratio, overburden,
                                mektighet_attributes, angel_attributes, y_attributes, x_attributes)
 paths_csv = make_csv_paths([25, 100, 200, 300, 500, 800, 1000])

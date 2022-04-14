@@ -131,7 +131,7 @@ if command == 'j':
 
     # blir en for-løkke her!
     path_RS2 = "C:/Program Files/Rocscience/RS2/RS2.exe"
-    # path_excel = "C:/Program Files/Microsoft Office/root/Office16/EXCEL.EXE"
+    # her lages geometriene til rs2-modellene
     i = 0
     indices_to_check = []
     list_differences = mo.make_container_diff(mappenavn_til_rs2)
@@ -146,85 +146,88 @@ if command == 'j':
                 indices = Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2, i, j)
                 indices_to_check.append(indices)
         i += 1
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-        for j in range(df_stier_rs2filer.shape[0]):
-            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-            path_fil_csv = df_stier_csvfiler[navn_csv][j]
-            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
-                Popen([path_RS2, path_fil_rs2])
-                sleep(7)
-                # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
-                # pyautogui operasjoner begynner her
-                pag.leftClick(927, 490, interval=time[1])
-                pag.hotkey('alt', 'f4', interval=time[1])
-                # lage diskretisering og mesh
-                pag.hotkey('ctrl', 'm', interval=time[1])
-                pag.hotkey('ctrl', 's', interval=time[1])
-                pag.hotkey('alt', 'f4', interval=time[1])
-                # pag.hotkey('ctrl', 't', interval=time[1])
-                # pag.hotkey('ctrl', 'enter', interval=time[1])
-                # sleep(25)
-    while True:
-        try:
-            command = input('fortsette script? j for ja: ')
-            if command == 'j':
-                break
-            elif command == 'n':
-                break
-            else:
-                print('j for ja din nisse!')
-        except NameError:
-            print('implementert verdi ukjent')
-            continue
-    # kalkulere
-    path_RS2_Compute = r"C:\Program Files\Rocscience\RS2\feawin.exe "
-    Popen([path_RS2_Compute])
-    sleep(5)
-    Auto.handlinger_kalkulasjon()
-    # lukke RS2 Compute
-    pag.hotkey('alt', 'f4', interval=time[2])
-    # åpne interpret
-    path_RS2_interpret = r"C:\Program Files\Rocscience\RS2\Interpret.exe "
-    i = 0
-    k = 0
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-        for j in range(df_stier_rs2filer.shape[0]):
-            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-            path_fil_csv = df_stier_csvfiler[navn_csv][j]
-            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
-                Popen([path_RS2_interpret, path_fil_rs2])
-                sleep(7)
-                i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
-                pag.hotkey('f6', interval=time[2])
-                for k in range(ant_parametere_interpret):
-                    navn_parameter = parameter_navn_interpret[k]
-                    i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,
-                                                  navn_parameter, i)
-                #markere slutten på fila
-                sr = pd.DataFrame(['end'])
-                sr.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)
-                # lukke interpret
-                pag.hotkey('alt', 'f4', interval=time[3])
-                pag.press('enter', interval=time[2])
-                # # lukke programmet
-                # pag.hotkey('ctrl', 's', interval=time[1])
-                # pag.hotkey('alt', 'f4', interval=time[1])
-                i = 0
-        k += 1
-    k = 0
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-        for j in range(df_stier_rs2filer.shape[0]):
-            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-            path_fil_csv = df_stier_csvfiler[navn_csv][j]
-            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
-                indices = indices_to_check[j]
-                parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
-                to_plot = mo.get_parameter_to_plot(path_fil_csv, parameter_navn_interpret0)
-                differences = mo.get_difference(to_plot, indices)
-                if differences is not None:
-                    list_differences[k].append(differences)
-                # mo.plot_data(to_plot, parameter_navn_interpret)
-        paths_fil_rs2 = df_stier_rs2filer[navn_rs2]
-        mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret, paths_fil_rs2,
-                                 sti_til_mappe_for_arbeidsfiler)
-        k += 1
+    # # her lages diskretisering og mesh til alle modellene
+    # for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+    #     for j in range(df_stier_rs2filer.shape[0]):
+    #         path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+    #         path_fil_csv = df_stier_csvfiler[navn_csv][j]
+    #         if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+    #             Popen([path_RS2, path_fil_rs2])
+    #             sleep(7)
+    #             # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
+    #             # pyautogui operasjoner begynner her
+    #             pag.leftClick(927, 490, interval=time[1])
+    #             pag.hotkey('alt', 'f4', interval=time[1])
+    #             # lage diskretisering og mesh
+    #             pag.hotkey('ctrl', 'm', interval=time[1])
+    #             pag.hotkey('ctrl', 's', interval=time[1])
+    #             pag.hotkey('alt', 'f4', interval=time[1])
+    # # while True:
+    # #     try:
+    # #         command = input('fortsette script? j for ja: ')
+    # #         if command == 'j':
+    # #             break
+    # #         elif command == 'n':
+    # #             break
+    # #         else:
+    # #             print('j for ja din nisse!')
+    # #     except NameError:
+    # #         print('implementert verdi ukjent')
+    # #         continue
+    #
+    # # her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, så fortsetter scriptet
+    # path_RS2_Compute = r"C:\Program Files\Rocscience\RS2\feawin.exe "
+    # Popen([path_RS2_Compute])
+    # sleep(5)
+    # Auto.handlinger_kalkulasjon()
+    # # lukke RS2 Compute
+    # pag.hotkey('alt', 'f4', interval=time[2])
+    #
+    #
+    # # åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format
+    # path_RS2_interpret = r"C:\Program Files\Rocscience\RS2\Interpret.exe "
+    # i = 0
+    # k = 0
+    # for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+    #     for j in range(df_stier_rs2filer.shape[0]):
+    #         path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+    #         path_fil_csv = df_stier_csvfiler[navn_csv][j]
+    #         if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+    #             Popen([path_RS2_interpret, path_fil_rs2])
+    #             sleep(7)
+    #             i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
+    #             pag.hotkey('f6', interval=time[2])
+    #             for k in range(ant_parametere_interpret):
+    #                 navn_parameter = parameter_navn_interpret[k]
+    #                 i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,
+    #                                               navn_parameter, i)
+    #             #markere slutten på fila
+    #             sr = pd.DataFrame(['end'])
+    #             sr.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)
+    #             # lukke interpret
+    #             pag.hotkey('alt', 'f4', interval=time[3])
+    #             pag.press('enter', interval=time[2])
+    #             # # lukke programmet
+    #             # pag.hotkey('ctrl', 's', interval=time[1])
+    #             # pag.hotkey('alt', 'f4', interval=time[1])
+    #             i = 0
+    #     k += 1
+    #
+    # # her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib
+    # k = 0
+    # for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+    #     for j in range(df_stier_rs2filer.shape[0]):
+    #         path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+    #         path_fil_csv = df_stier_csvfiler[navn_csv][j]
+    #         if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+    #             indices = indices_to_check[j]
+    #             parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
+    #             to_plot = mo.get_parameter_to_plot(path_fil_csv, parameter_navn_interpret0)
+    #             differences = mo.get_difference(to_plot, indices)
+    #             if differences is not None:
+    #                 list_differences[k].append(differences)
+    #             # mo.plot_data(to_plot, parameter_navn_interpret)
+    #     paths_fil_rs2 = df_stier_rs2filer[navn_rs2]
+    #     mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret, paths_fil_rs2,
+    #                              sti_til_mappe_for_arbeidsfiler)
+    #     k += 1

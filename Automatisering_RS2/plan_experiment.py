@@ -37,8 +37,7 @@ def get_range_changing_attributes(rock_mass_material, weakness_zone_material, st
         else:
             iter_list[idx] = np.arange(iter_object[0], iter_object[1], iter_object[2]).tolist()
     iter_list.insert(3, [overburden])
-    return iter_list[0], iter_list[1], iter_list[2], iter_list[3], iter_list[4], iter_list[5], iter_list[6], iter_list[
-        7]
+    return iter_list[0], iter_list[1], iter_list[2], iter_list[3], iter_list[4], iter_list[5], iter_list[6], iter_list[7]
 
 
 def get_shape_matrix(rock_mass_material, weakness_zone_material, stress_ratio, overburden,
@@ -94,7 +93,6 @@ def set_model_csv_attributes(paths_csv_attributes, rock_mass_material, weakness_
                                                                  y_attributes, x_attributes)
     shape_matrix_list = get_shape_matrix(rmm, wzm, sr, ob, m, v, y, x)
     shape_matrix_list.pop(3)
-    print(shape_matrix_list)
     for o in ob:
         with open(paths_csv_attributes[get_ob_index(o)], 'w', newline='') as file:
             writer_object = writer(file, delimiter=";")
@@ -130,12 +128,3 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
         file.close()
     return
 
-
-path_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering\parameter_verdier_filnavn.csv "
-rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, y_attributes, x_attributes = 80, 1, 1, 500, [0.5, 5.5, 0.5], 22.5, 0, [-7, 8, 1]
-set_model_csv_attributes_batch(path_csv, rock_mass_material, weakness_zone_material, stress_ratio, overburden,
-                               mektighet_attributes, angel_attributes, y_attributes, x_attributes)
-paths_csv = make_csv_paths([25, 100, 200, 300, 500, 800, 1000])
-delete_content_csv(paths_csv)
-set_model_csv_attributes(paths_csv, rock_mass_material, weakness_zone_material, stress_ratio, overburden,
-                         mektighet_attributes, angel_attributes, y_attributes, x_attributes)

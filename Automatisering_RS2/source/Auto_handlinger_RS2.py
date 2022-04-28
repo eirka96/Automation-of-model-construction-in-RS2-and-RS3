@@ -29,17 +29,20 @@ def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til
     if forflytning_x == 1.0:
         forflytning_x = 0.99
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
-    print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
-    indices_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)
-    return indices_to_check
+    # print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
+    points_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)
+    return points_to_check
 
 
 def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
     if time is None:
         time = time_list
-    pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-              interval=time[4])  # velg stage 2
+    # pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    #           interval=time[1])  # velg stage 2
     i += 1
+    pag.click(144, 102, interval=time[1])
+    pag.click(218, 194, interval=time[1])
+    pag.click(346, 191, interval=time[1])
     return i
 
 
@@ -50,42 +53,42 @@ def store_results_in_csv(df_koordinates_mouse, name_col_df, path_fil_csv, navn_p
         sr = pd.DataFrame([navn_parameter])
         sr.to_csv(path_or_buf=path_fil_csv, mode='w', sep=';', header=False, index=False)
         pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                       interval=time[2])  # velg boundary, høyreklikk
+                       interval=time[1])  # velg boundary, høyreklikk
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[2])  # velg query boundary
+                  interval=time[1])  # velg query boundary
         i += 1
-        pag.press('enter', interval=time[2])
+        pag.press('enter', interval=time[1])
         pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                       interval=time[4])  # velg boundary 1ste gang, høyreklikk
+                       interval=time[1])  # velg boundary 1ste gang, høyreklikk
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[4])  # velg copy data
+                  interval=time[1])  # velg copy data
         i += 1
         data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
         # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-        data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)  # data lagres i respektiv csv
+        data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=True)  # data lagres i respektiv csv
     else:
         sr = pd.DataFrame([navn_parameter])
         sr.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[2], button='left')  # endre parameter
+                  interval=time[1], button='left')  # endre parameter
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[2], button='left')  # velg deformation
+                  interval=time[1], button='left')  # velg deformation
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[2], button='left')  # velg total deformation
+                  interval=time[1], button='left')  # velg total deformation
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[4], button='right')  # velg boundary 2dre gang, høyreklikk
+                  interval=time[1], button='right')  # velg boundary 2dre gang, høyreklikk
         i += 1
         pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[4], button='left')  # velg copy data
+                  interval=time[1], button='left')  # velg copy data
         i += 1
         data = pd.read_clipboard()  # henter ut resultat fra interpret RS2, se full beskrivelse i
         # Logg - Mastergradsoppgave_Modellering, 10.08.2021
-        data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=None)  # data lagres i respektiv csv
+        data.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=None, index=True)  # data lagres i respektiv csv
     return i
 
 

@@ -591,7 +591,6 @@ class Materials(InnerBoundary):
         mid_points = self.get_middle_points()
         normaler = self.get_normal_lines(mid_points)
         ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
-        print(ytre_punkt_over, ytre_punkt_under)
         list_iterate, list_iterate1 = self.__get_material_list0(ytre_punkt_under, ytre_punkt_over)
         self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
                                            r'\g<1>' + str(4),
@@ -647,7 +646,6 @@ class Materials(InnerBoundary):
             else:
                 punkt_i_sone, punkt_u_sone = self.checker_ib(normaler[1], 1)
         list_iterate, list_iterate1 = self.__get_material_list1(ytre_punkt_under, ytre_punkt_over, punkt_i_sone, punkt_u_sone)
-        print(list_iterate)
         i_material = self.index_materials
         self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
                                            r'\g<1>' + str(5),
@@ -939,3 +937,18 @@ class Materials(InnerBoundary):
                                                self.data[i_material + 6])
             i_material += 9
         return
+
+
+def get_indices_periphery(points_tunnel_boundary, points_wb_3, points_wb_4):
+    indices = []
+    to_check = [points_wb_3, points_wb_4]
+    for check in to_check:
+        for point in check:
+            idx = [i for i, e in enumerate(points_tunnel_boundary)
+                   if e == [round(point[0], len(str(e[0]).replace('-', ''))-2), round(point[1],
+                                                                                      len(str(e[1]).replace('-', ''))-2)]]
+            if not idx:
+                continue
+            indices.append(idx[0])
+    indices.sort()
+    return indices

@@ -147,8 +147,8 @@ if command == 'j':
     mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mapper_endelige_filer)
 
     # her stilles spm om det vil startes et nytt eksperiment, hvis ja så blir det dannet nye filer og de gamle forkastes
-    # change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
-    #                              sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
+    change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
+                                 sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
     # if change[0]:
     #     df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
 
@@ -170,26 +170,26 @@ if command == 'j':
     points_to_check = go.get_parameters(df_stier_rs2filer, mappenavn_til_rs2, mappenavn_til_csv)
 
     """her lages diskretisering og mesh til alle modellene"""
-    # ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time)
+    ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 
     så fortsetter scriptet. Det er viktig å sørge for at rs2_compute allerede finner den mappen som filene ligger i.
     """
-    # ea.calculate(path_rs2_compute, time)
+    ea.calculate(path_rs2_compute, time)
 
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
     ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
                   df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time)
-
-    """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
-    list_paths_differences, list_diff_navn, list_paths_values, list_val_navn = \
-        ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
-                                   df_stier_csvfiler, points_to_check, sti_til_mappe_for_arbeidsfiler,
-                                   sti_til_mapper_endelige_filer)
-
-    """her plottes det som skal plottes"""
-    ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_val_navn,
-                     mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-                     list_of_lists_attributes, attribute_type, fysiske_enheter)
+    #
+    # """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
+    # list_paths_differences, list_diff_navn, list_paths_values, list_val_navn = \
+    #     ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+    #                                df_stier_csvfiler, points_to_check, sti_til_mappe_for_arbeidsfiler,
+    #                                sti_til_mapper_endelige_filer)
+    #
+    # """her plottes det som skal plottes"""
+    # ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_val_navn,
+    #                  mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
+    #                  list_of_lists_attributes, attribute_type, fysiske_enheter)
 

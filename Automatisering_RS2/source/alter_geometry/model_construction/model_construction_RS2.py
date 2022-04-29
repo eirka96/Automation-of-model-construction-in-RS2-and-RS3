@@ -272,19 +272,31 @@ class InnerBoundary:
             index_lowest_diff.sort()
             i_data_list.append(self.index_boundary1 + self.get_start_quad(points[i]) + index_lowest_diff[1])
         i_data_list, points = (list(t) for t in zip(*sorted(zip(i_data_list, points))))
-        self.n_points_ib = self.n_points_ib + len(points)
+        # self.n_points_ib = self.n_points_ib + len(points)
         return i_data_list, points
+
+    def remove_neighbour(self, i_data, point):
+        point_string1 = re.findall(r"[-+]?(?:\d*\.\d+|\d+\b(?!:))", self.data[i_data-1])
+        point_string2 = re.findall(r"[-+]?(?:\d*\.\d+|\d+\b(?!:))", self.data[i_data+1])
+        point_check1 = [float(point_string1[0]), float(point_string1[1])]
+        point_check2 = [float(point_string2[0]), float(point_string2[1])]
+        len1 = np.sqrt((point[0]-point_check1[0])**2 + (point[1]-point_check1[1])**2)
+        len2 = np.sqrt((point[0] - point_check2[0]) ** 2 + (point[1] - point_check2[1]) ** 2)
+        if len1 < len2:
+            self.data.pop(i_data - 1)
+        else:
+            self.data.pop(i_data + 1)
+        return
 
     def set_inner_boundary(self):
         i_data_list, points = self.sort_boundary_points()
-        p = 0
-        for i in range(len(points)):
-            self.data.insert(i_data_list[i] + p,
-                             "         {}: ".format(0) + str(points[i][0]) + ', ' + str(points[i][1]) + '\n')
-            self.data.insert(i_data_list[i] + self.n_points_ib + 10, "        vertex 0 is temp: no" + '\n')
-            p += 1
-        self.data[self.index_boundary1 - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(self.n_points_ib),
-                                                     self.data[self.index_boundary1 - 1])
+        # p = 0
+        for i_data, point in zip(i_data_list, points):
+            self.data.insert(i_data, "         {}: ".format(0) + str(point[0]) + ', ' + str(point[1]) + '\n')
+            self.remove_neighbour(i_data, point)
+            # p += 1
+        # self.data[self.index_boundary1 - 1] = re.sub(r'^(\s*(?:\S+\s+){2})\S+', r'\g<1>' + str(self.n_points_ib),
+        #                                              self.data[self.index_boundary1 - 1])
         # rette opp i nummerering av punkter
         for index in range(self.n_points_ib):
             self.data[self.index_boundary1 + index] = re.sub(r'^(\s*(?:\S+\s+){0})\S+', r'\g<1>' + str(index) + ':',

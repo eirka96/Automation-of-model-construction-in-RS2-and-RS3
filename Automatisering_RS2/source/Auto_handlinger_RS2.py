@@ -21,7 +21,7 @@ def klargjore_rs2(df_koordinater_mus, navn_kol, i=0, time=None):
     return i
 
 
-def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, i, j):
+def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, list_which_material, i, j):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
     vinkel = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
@@ -30,7 +30,8 @@ def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til
         forflytning_x = 0.99
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
     # print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
-    points_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file)
+    points_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
+                                        list_which_material)
     return points_to_check
 
 

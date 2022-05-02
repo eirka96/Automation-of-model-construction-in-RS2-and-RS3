@@ -11,16 +11,16 @@ fil.
 """
 
 
-def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_RS2_file,
-                   ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
+def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_rs2_file,
+                   list_which_material, ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
                    n_points_tunnel_boundary=360, ytre_grenser_utstrekning=150):
     # henter kildefilen til RS2, lagret som .fea
-    with open(path_of_RS2_file, 'r') as file:
+    with open(path_of_rs2_file, 'r') as file:
         data = file.readlines()
     # henter nøkkelelementer i listen data bassert på unike nøkkelord, som blir brukt til å navigere tekseditoren
     index_material_mesh = data.index("materials mesh start:\n") + 3
     index_boundary1 = data.index("  boundary 1 start:\n") + 6
-    points_tunnel_boundary0 = data[45753:46113].copy()
+    points_tunnel_boundary0 = data[index_boundary1:index_boundary1 + n_points_tunnel_boundary].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
     # definerer hvilke punkter i tunnel_boundary som tilhører hvilken matematiske kvadrant.
@@ -87,6 +87,7 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
         punkter_indre = ib.get_points_on_circular_boundary_2()
 
     # sette startspunkt for endringer av de tre siste boundaries
+    index_boundary1 = data.index("  boundary 1 start:\n") + 6
     index_boundary2 = data.index("  boundary 2 start:\n") + 6
     index_boundary3 = data.index("  boundary 3 start:\n") + 6
     index_boundary4 = data.index("  boundary 4 start:\n") + 6
@@ -98,7 +99,7 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     bl = mc.BoundaryLines(punkter_ytre, punkter_indre, index_boundary3, index_boundary4, data, ant_linjer_sone)
     bl.set_weakness_points()
 
-    points_tunnel_boundary0 = data[45753:45753+ib.n_points_ib].copy()
+    points_tunnel_boundary0 = data[index_boundary1:index_boundary1+ib.n_points_ib].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
     # indekser der data skal hentes ut blir her bestemt, returneres til main
@@ -106,10 +107,10 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     # endre materials mesh i kildekoden til RS2, element 1
     mls = mc.Materials(index_material_mesh, punkter_indre, ytre_grenser_utstrekning, ant_linjer_sone, quad, punkter_ytre, data,
                        n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone, points_tunnel_boundary,
-                       forflytning_y_sone, forflytning_x_sone)
+                       forflytning_y_sone, forflytning_x_sone, list_which_material)
     mls.setmaterialmesh()
     # and write everything back
-    with open(path_of_RS2_file, 'w') as file:
+    with open(path_of_rs2_file, 'w') as file:
         file.writelines(data)
     return points_to_check
 

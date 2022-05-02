@@ -28,7 +28,7 @@ def pause_script():
 
 
 def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
-                             df_endrede_attributter_rs2filer):
+                             df_endrede_attributter_rs2filer, list_which_material):
     i = 0
     points_to_check = []
     for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
@@ -39,7 +39,8 @@ def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2f
             print(path_fil_csv)
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
-                points = Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2, i, j)
+                points = Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2,
+                                          list_which_material, i, j)
                 points_to_check.append(points)
         i += 1
     return points_to_check
@@ -105,21 +106,21 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
 
 def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
                             df_stier_csvfiler, points_to_check, sti_til_mappe_for_arbeidsfiler,
-                            sti_til_mapper_endelige_filer):
+                            sti_til_mapper_endelige_filer, list_excluded_files, valnavn):
     k = 0
     list_differences = mo.make_container_diff(mappenavn_til_rs2)
     list_values = mo.make_container_diff(mappenavn_til_rs2)
     parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
     list_paths_differences = []
     list_diff_navn = []
-    list_paths_values = []
-    list_val_navn = []
+    list_path_values = []
     for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
         # element_files_corrupted er definert mtp en treshold for filstørrelse, da de filer hvor feilklikking inntreffer
         # viser ca 1/3 mindre størrelse.
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
         list_paths_differences.append([])
         list_diff_navn.append([])
+        list_path_values.append([])
         if elements_files_corrupted is not None:
             check = elements_files_corrupted.copy()
         else:
@@ -132,26 +133,24 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                     if len(check) > 1:
                         check.pop(0)
                     continue
-                elif j == 135 or j == 149:
+                elif j in list_excluded_files:
                     continue
                 points = points_to_check[k][j]
                 query_values = mo.get_Query_values(path_fil_csv, parameter_navn_interpret0)
                 to_plot = mo.get_values_to_plot(query_values)
                 query_positions = mo.get_query_positions(query_values)
-                print('PIKK')
-                print(j)
                 differences = mo.get_difference(to_plot, points, query_positions)
                 quad_high = mo.get_values_quad(to_plot, points, query_positions, [0, 1])
-                print(quad_high)
                 quad_low = mo.get_values_quad(to_plot, points, query_positions, [2, 3])
-                values_to_plot = [quad_high, quad_low]
+                values_to_plot = [quad_high[0][0][0], quad_high[0][0][1], quad_high[1][0][1], quad_high[0][1][0],
+                                  quad_high[0][1][1], quad_high[1][1][1],
+                                  quad_low[0][0][0], quad_low[0][0][1], quad_low[1][0][1], quad_low[0][1][0],
+                                  quad_low[0][1][1], quad_low[1][1][1]]
                 if differences is not None:
                     list_differences[k].append(differences)
                 if all(value is not None for value in values_to_plot):
                     list_values[k].append(values_to_plot)
                 # mo.plot_data(to_plot, parameter_navn_interpret)
-        print('OOOGAAAHHHHH')
-        print(list_values)
         paths_fil_csv = df_stier_csvfiler[navn_csv]
         paths_differences, diff_navn = mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret,
                                                                 paths_fil_csv, sti_til_mappe_for_arbeidsfiler,
@@ -159,24 +158,19 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                                                                 sti_til_mapper_endelige_filer)
         list_paths_differences[k] = paths_differences
         list_diff_navn[k] = diff_navn
-        # paths_values, val_navn = mo.create_values_csv(navn_csv, list_values[k], parameter_navn_interpret,
-        #                                               paths_fil_csv, sti_til_mappe_for_arbeidsfiler,
-        #                                               elements_files_corrupted, 'values',
-        #                                               sti_til_mapper_endelige_filer)
-        # list_paths_values[k] = paths_values
-        # list_val_navn[k] = val_navn
-        print(paths_differences)
-        # print(paths_values)
+        path_value = mo.create_values_csv(navn_csv, list_values[k], parameter_navn_interpret, paths_fil_csv, sti_til_mappe_for_arbeidsfiler,
+                                          elements_files_corrupted, 'values',
+                                          sti_til_mapper_endelige_filer, valnavn)
+        list_path_values[k] = path_value
         k += 1
-    return list_paths_differences, list_diff_navn, list_paths_values, list_val_navn
+    return list_paths_differences, list_diff_navn, list_path_values
 
 
-def execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_val_navn,
+def execute_plots(list_paths_differences, list_diff_navn, list_path_values, valnavn,
                   mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-                  list_of_lists_attributes, attribute_type, fysiske_enheter):
-    for navn_rs2, navn_csv, paths_differences, diff_navn, paths_values, val_navn in zip(
-            mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_paths_values,
-            list_val_navn):
+                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_exluded_files, color_map):
+    for navn_rs2, navn_csv, paths_differences, diff_navn, path_value in zip(
+            mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values):
         if paths_differences is None:
             continue
         parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
@@ -188,9 +182,12 @@ def execute_plots(list_paths_differences, list_diff_navn, list_paths_values, lis
         #                                                                                 df_stier_csvfiler[navn_csv],
         #                                                                                 elements_files_corrupted)
         list_category, list_indices = mo.get_category(list_of_lists_attributes, attribute_type,
-                                                      df_stier_csvfiler[navn_csv], elements_files_corrupted)
-        mo.plot_difference_selection(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
-                                     list_category, list_indices, attribute_type)
+                                                      df_stier_csvfiler[navn_csv], elements_files_corrupted,
+                                                      list_exluded_files)
+        # mo.plot_difference_selection(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
+        #                              list_category, list_indices, attribute_type, color_map)
+        mo.plot_value_selection(path_value, parameter_navn_interpret0, diff_navn, valnavn, fysiske_enheter,
+                                list_category, list_indices, attribute_type, color_map)
         # mo.plot_difference_selection0(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
         #                               indices_selection_true, indices_selection_augm)
     return

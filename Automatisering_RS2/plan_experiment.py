@@ -12,12 +12,10 @@ def delete_content_csv(csv_paths):
     return
 
 
-def make_csv_paths(list_iter_ob):
+def make_csv_paths(list_iter_ob, path_shell_rs2):
     csv_paths = []
     for i in range(len(list_iter_ob)):
-        csv_paths.append(r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone"
-                         r"\parameterstudie\excel\Pycharm_automatisering\parameter_verdier_filnavn\S_bm80_ss1_k1_od{}"
-                         r"\S_bm80_ss1_k1_od{}.csv ".format(list_iter_ob[i], list_iter_ob[i]))
+        csv_paths.append(path_shell_rs2.format(list_iter_ob[i], list_iter_ob[i]))
     return csv_paths
 
 

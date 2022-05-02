@@ -580,13 +580,14 @@ class BoundaryLines:
 class Materials(InnerBoundary):
     def __init__(self, index_materials, punkter_indre, ytre_grenser_utstrekning, ant_linjer, nth_quad, punkter_ytre, data,
                  number_points_inner_boundary, index_boundary1,
-                 diameter, vinkel, points_tunnel_boundary, forflytning_y_sone, forflytning_x_sone):
+                 diameter, vinkel, points_tunnel_boundary, forflytning_y_sone, forflytning_x_sone, list_which_material):
         super().__init__(ant_linjer, nth_quad, punkter_ytre, data, number_points_inner_boundary, index_boundary1,
                          diameter, vinkel, points_tunnel_boundary, ytre_grenser_utstrekning,)
         self.index_materials = index_materials
         self.punkter_indre = punkter_indre.copy()
         self.forflytning_y_sone = forflytning_y_sone
         self.forflytning_x_sone = forflytning_x_sone
+        self.list_which_material = list_which_material
 
     def setmaterialmesh(self):
         if all(points is None for points in self.punkter_indre):
@@ -603,7 +604,8 @@ class Materials(InnerBoundary):
         mid_points = self.get_middle_points()
         normaler = self.get_normal_lines(mid_points)
         ytre_punkt_under, ytre_punkt_over = self.checker_ob_exl_innerb(normaler)
-        list_iterate, list_iterate1 = self.__get_material_list0(ytre_punkt_under, ytre_punkt_over)
+        list_material = self.list_which_material[0]
+        list_iterate, list_iterate1 = self.__get_material_list0(ytre_punkt_under, ytre_punkt_over, list_material)
         self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
                                            r'\g<1>' + str(4),
                                            self.data[i_material - 2])
@@ -624,15 +626,15 @@ class Materials(InnerBoundary):
             i_material += 9
         return
 
-    def __get_material_list0(self, ytre_punkt_under, ytre_punkt_over):
+    def __get_material_list0(self, ytre_punkt_under, ytre_punkt_over, list_material):
         list0 = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
                  [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
                  [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
                  [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
         if self.forflytning_x_sone == 0 and self.forflytning_y_sone == 0:
-            list1 = [[15, 15], [15, 15], [16, 16], [16, 0]]
+            list1 = list_material[0]
         else:
-            list1 = [[15, 15], [15, 15], [16, 16], [15, 0]]
+            list1 = list_material[1]
         return list0, list1
 
     def __setmaterialmesh1(self):
@@ -657,7 +659,8 @@ class Materials(InnerBoundary):
                 punkt_i_sone, punkt_u_sone = self.checker_ib(normaler[0], 0)
             else:
                 punkt_i_sone, punkt_u_sone = self.checker_ib(normaler[1], 1)
-        list_iterate, list_iterate1 = self.__get_material_list1(ytre_punkt_under, ytre_punkt_over, punkt_i_sone, punkt_u_sone)
+        list_iterate = self.__get_material_list1(ytre_punkt_under, ytre_punkt_over, punkt_i_sone, punkt_u_sone)
+        list_iterate1 = self.list_which_material[1]
         i_material = self.index_materials
         self.data[i_material - 2] = re.sub(r'^(\s*(?:\S+\s+){2})\S+',
                                            r'\g<1>' + str(5),
@@ -701,8 +704,7 @@ class Materials(InnerBoundary):
                 [self.punkter_indre[i], self.punkter_indre[p[i]], punkt_i_sone],
                 [self.punkter_indre[i], self.punkter_indre[p[i]], punkt_u_sone],
                 [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[p[i]]]]
-        list1 = [[15, 15], [15, 15], [16, 0], [15, 0], [16, 16]]
-        return list, list1
+        return list
 
     def get_middle_point(self, element):
         k = [3, 1]
@@ -916,8 +918,7 @@ class Materials(InnerBoundary):
                  [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_indre[2]],
                  [self.punkter_ytre[0], self.punkter_ytre[1], self.punkter_indre[1]],
                  [self.punkter_indre[3], self.punkter_indre[2], self.punkter_indre[1]]]
-        list1 = [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]
-        return list0, list1
+        return list0
 
     def __setmaterialmesh2(self):
         if self.vinkel == 0:
@@ -930,8 +931,9 @@ class Materials(InnerBoundary):
             normaler = self.get_normal_lines(mid_points)
             ytre_punkt_under, ytre_punkt_over = self.checker_ob0(normaler)
             indre_punkt_under, indre_punkt_over = self.checker_ib_centered(normaler)
-        list_iterate, list_iterate1 = self.__get_material_list2(ytre_punkt_under, ytre_punkt_over, indre_punkt_under,
+        list_iterate = self.__get_material_list2(ytre_punkt_under, ytre_punkt_over, indre_punkt_under,
                                                                 indre_punkt_over)
+        list_iterate1 = self.list_which_material[2]
         i_material = self.index_materials
         for i in range(7):
             for j in range(3):

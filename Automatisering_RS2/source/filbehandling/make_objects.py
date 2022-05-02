@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from colorama import Fore
 from colorama import Style
 from csv import writer
+from ast import literal_eval
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -88,19 +89,19 @@ def get_file_paths_batch(paths_shale_rs2, path_csv):
 """
 Funksjon under brukes til nå ikke 
 """
-def get_original_file_paths():
-    l = [25, 100, 200, 300, 500, 800, 1000]
-    sti_kildefil_rs2 = []
-    sti_kildefil_csv = []
-    for i in l:
-        sti_kildefil_rs2.append(
-            r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
-            r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od{}" \
-            r"\S_bm80_ss1_k1_od{}_v0_m2_mal\S_bm80_ss1_k1_od{}_v0_m2_mal.fea ".format(i, i, i))
-        sti_kildefil_csv.append(r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave"
-                                r"\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering"
-                                r"\parameter_verdier_filnavn\S_bm80_ss1_k1_od{}\S_bm80_ss1_k1_od{}.csv ".format(i, i))
-    return sti_kildefil_rs2, sti_kildefil_csv
+# def get_original_file_paths():
+#     l = [25, 100, 200, 300, 500, 800, 1000]
+#     sti_kildefil_rs2 = []
+#     sti_kildefil_csv = []
+#     for i in l:
+#         sti_kildefil_rs2.append(
+#             r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\Mine " \
+#             r"modeller\RS2\tverrsnitt_sirkulær\sirkulær_mal\mal_S_bm80_ss1_k1_od{}" \
+#             r"\S_bm80_ss1_k1_od{}_v0_m2_mal\S_bm80_ss1_k1_od{}_v0_m2_mal.fea ".format(i, i, i))
+#         sti_kildefil_csv.append(r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave"
+#                                 r"\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering"
+#                                 r"\parameter_verdier_filnavn\S_bm80_ss1_k1_od{}\S_bm80_ss1_k1_od{}.csv ".format(i, i))
+#     return sti_kildefil_rs2, sti_kildefil_csv
 
 
 """ henter ut stier fra elleredeeksisterende eksperiment"""
@@ -596,10 +597,10 @@ def get_values_quad(to_plot, points, query_positions, ind_to_plot):
         a = max([indices[ind_to_plot[0]], indices[ind_to_plot[1]]])
         b = min([indices[ind_to_plot[0]], indices[ind_to_plot[1]]])
         check = [i for i in range(b, a + 1, 1)]
-        index_max_value = int(statistics.median(check)//1) # //1 rounds number down to closest integer
+        index_max_value = int(statistics.median(check)//1)  # //1 rounds number down to closest integer
         max_value.append(data_sep[index_max_value])
         indices_max_value.append(index_max_value)
-    return [value_intersect, max_value, indices_max_value[0]]
+    return [value_intersect, max_value]
 
 
 def get_difference(to_plot, points, query_positions):
@@ -686,7 +687,7 @@ def plot_differences(paths, parameter_navn, elements_corrupted_files, differanse
     return
 
 
-def get_indices_paths_selection(list_attributes, attribute_types, paths, elements_corrupted_files):
+def get_indices_paths_selection(list_attributes, attribute_types, paths, elements_corrupted_files, list_exluded_files):
     indices_true = []
     indices_augm = []
     i = 0
@@ -698,7 +699,7 @@ def get_indices_paths_selection(list_attributes, attribute_types, paths, element
         comb_str_list = combine_str(attributes, attribute_type)
         for comb_str in comb_str_list:
             selected_idx_true = [j for j, path in enumerate(paths) if comb_str in path and
-                                 (j not in elements_corrupted_files and j not in [135, 149])]
+                                 (j not in elements_corrupted_files and j not in list_exluded_files)]
             selected_idx_augm = [j for j in range(len(selected_idx_true))]
             indices_true[i].append(selected_idx_true)
             indices_augm[i].append(selected_idx_augm)
@@ -706,7 +707,7 @@ def get_indices_paths_selection(list_attributes, attribute_types, paths, element
     return indices_true, indices_augm
 
 
-def get_category(list_attributes, attribute_types, paths, elements_corrupted_files):
+def get_category(list_attributes, attribute_types, paths, elements_corrupted_files, list_exluded_files):
     category = []
     indices = []
     i, p = 0, 0
@@ -718,7 +719,7 @@ def get_category(list_attributes, attribute_types, paths, elements_corrupted_fil
         comb_str_list = combine_str(attributes, attribute_type)
         for comb_str in comb_str_list:
             for j, path in enumerate(paths):
-                if comb_str in path and (j not in elements_corrupted_files and j not in [135, 149]):
+                if comb_str in path and (j not in elements_corrupted_files and j not in list_exluded_files):
                     category[i].append(comb_str)
                     indices[i].append(p)
                     p += 1
@@ -727,24 +728,58 @@ def get_category(list_attributes, attribute_types, paths, elements_corrupted_fil
     return category, indices
 
 
-def plot_value_selection(paths, parameter_navn, differanse_navn, fysiske_enheter, list_category, list_indices,
-                              attribute_type):
+def get_start_index_df_value(parameter_navn, diff_navn):
+    list_indices = []
+    for i in range(len(parameter_navn)):
+        list_indices.append([])
+        for j in range(len(diff_navn)):
+            list_indices[i].append(i*2+4*j)
+    return list_indices
+
+
+def plot_value_selection(path, parameter_navn, diff_navn, val_navn, fysiske_enheter, list_category, list_indices,
+                         attribute_type, color_map):
+    parameter_navn.pop()
+    diff_navn.pop(0)
+    val_navn.pop(0)
+    df = get_df_differences_from_csv(path)
+    df = df.iloc[:, 1:]
+    for column in df:
+        print(column)
+        df[column] = df[column].apply(literal_eval)
+    list_df_indices = get_start_index_df_value(parameter_navn, diff_navn)
+    for k, (par_navn, enhet) in enumerate(zip(parameter_navn, fysiske_enheter)):
+        for category, indices, type0 in zip(list_category, list_indices, attribute_type):
+            df['category'] = category
+            df['indices_true'] = indices
+            groups = df.groupby('category')
+            figure, axis = plt.subplots(1, 2)
+            for i, diff_name in enumerate(diff_navn):
+                axis[i].set_prop_cycle(color=color_map[type0])
+                for name, group in groups:
+                    range0 = val_navn[list_df_indices[k][i]]
+                    range1 = val_navn[list_df_indices[k][i]+1]
+                    axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="--", label=name)
+                    axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="--", label=name)
+                    axis[i].plot(group['indices_true'], group[[range1]], marker="o", linestyle="--", label=name)
+                    axis[i].legend()
+                    axis[i].set_xlabel('modellnummer')
+                    axis[i].set_ylabel('differanse av ' + par_navn + ' ' + enhet)
+                    axis[i].set_title('plot, differanse av ' + par_navn + 'sortert mhp. ' + type0 + ', ' + diff_name)
+                # for j, txt in enumerate(df['indices_true']):
+                #     axis[i].annotate(txt, (txt, df[diff_name][j]), fontsize=8)
+            plt.show()
 
     return
 
 
 def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_enheter, list_category, list_indices,
-                              attribute_type):
+                              attribute_type, color_map):
     parameter_navn.pop()
     differanse_navn.pop(0)
-    color_map = {
-        'm': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'fuchsia'],
-        'x': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'xkcd:yellowish', 'green', 'xkcd:lime', 'blue',
-              'cyan', 'purple', 'fuchsia', 'xkcd:lavender', 'xkcd:bronze']
-    }
     for par_navn, path, enhet in zip(parameter_navn, paths, fysiske_enheter):
         df = get_df_differences_from_csv(path)
-        for category, indices, type in zip(list_category, list_indices, attribute_type):
+        for category, indices, type0 in zip(list_category, list_indices, attribute_type):
             df['category'] = category
             df['indices_true'] = indices
             groups = df.groupby('category')
@@ -752,7 +787,7 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
             i = 0
             figure, axis = plt.subplots(1, 2)
             for diff_name in differanse_navn:
-                axis[i].set_prop_cycle(color=color_map[type])
+                axis[i].set_prop_cycle(color=color_map[type0])
                 # plt.figure(i)
                 # i += 1
                 for name, group in groups:
@@ -760,7 +795,7 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
                     axis[i].legend()
                     axis[i].set_xlabel('modellnummer')
                     axis[i].set_ylabel('differanse av ' + par_navn + ' ' + enhet)
-                    axis[i].set_title('plot, differanse av ' + par_navn + 'sortert mhp. ' + type + ', ' + diff_name)
+                    axis[i].set_title('plot, differanse av ' + par_navn + 'sortert mhp. ' + type0 + ', ' + diff_name)
                 for j, txt in enumerate(df['indices_true']):
                     axis[i].annotate(txt, (txt, df[diff_name][j]), fontsize=8)
                 # for indices_true, indices_augm in zip(indices_selection_true, indices_selection_augm):
@@ -785,36 +820,6 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
                 i += 1
                 # plt.legend()
                 # plt.legend()
-            plt.show()
-    return
-
-
-def plot_difference_selection0(paths, parameter_navn, differanse_navn, fysiske_enheter, indices_selection_true,
-                               indices_selection_augm):
-    parameter_navn.pop()
-    differanse_navn.pop(0)
-    for par_navn, path, enhet in zip(parameter_navn, paths, fysiske_enheter):
-        df = get_df_differences_from_csv(path)
-        for indices_true, indices_augm in zip(indices_selection_true, indices_selection_augm):
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            for indices0_true, indices0_augm in zip(indices_true, indices_augm):
-                for diff_navn in differanse_navn:
-                    y = df.loc[indices0_augm, diff_navn]
-                    ax.scatter(indices0_true, y)
-            # color = 'green', linestyle = 'dashed', linewidth = 3,
-            # marker = 'o', markerfacecolor = 'blue', markersize = 12
-
-            # # labels for bars
-            # tick_label = ['one', 'two', 'three', 'four', 'five']
-            #
-            # # plotting a bar chart
-            # plt.bar(left, height, tick_label=tick_label,
-            #         width=0.8, color=['red', 'green'])
-            plt.xlabel('modellnummer')
-            plt.ylabel('differanse av ' + par_navn + ' ' + enhet)
-            plt.title('plot, differanse av ' + par_navn)
-            # plt.legend()
             plt.show()
     return
 
@@ -851,7 +856,7 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
                                          'S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x-7']
     filnavn_csv = [name for name in filnavn_csv if name not in names_to_remove]
     # lager paths til der hvor differensene skal lagres
-    paths = [[t + foldername_csv + type_verdi + '_' + navn.replace(':', '').replace(' ', '') + '.csv'] for navn in p]
+    paths = [[t + '/' + foldername_csv + type_verdi + '_' + navn.replace(':', '').replace(' ', '') + '.csv'] for navn in p]
     # df_differences = pd.DataFrame(columns=['file_name', 'quad_low', 'quad_high'])
     for navn, differences in zip(filnavn_csv, list_differences):
         d = list(map(list, zip(*differences)))  # transposes the list of lists
@@ -868,7 +873,7 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
 
 
 def create_values_csv(foldername_csv, list_values, parameternavn_interpret, paths_fil_csv, path_arbeidsmappe,
-                      elements_corrupted_files, type_verdi, path_data_storage):
+                      elements_corrupted_files, type_verdi, path_data_storage, val_navn):
     paths_csv = paths_fil_csv.copy()
     if all(path is None for path in paths_fil_csv):
         return None, None
@@ -885,20 +890,16 @@ def create_values_csv(foldername_csv, list_values, parameternavn_interpret, path
                                          'S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x-7']
     filnavn_csv = [name for name in filnavn_csv if name not in names_to_remove]
     # lager paths til der hvor verdiene skal lagres
-    paths = [[t + foldername_csv + type_verdi + '_' + navn.replace(':', '').replace(' ', '') + '.csv'] for navn in p]
+    path = t + '/' + foldername_csv + type_verdi + '.csv'
     # df_differences = pd.DataFrame(columns=['file_name', 'quad_low', 'quad_high'])
+    list_to_df = []
     for navn, values in zip(filnavn_csv, list_values):
-        #d = list(map(list, zip(*differences)))  # transposes the list of lists
-        for path, value in zip(paths, values):
-            path.append([navn] + value)
+        # d = list(map(list, zip(*differences)))  # transposes the list of lists
+        list_to_df.append([navn] + values)
     # df_differences.to_csv(path_or_buf=path, sep=';', mode='w')
-    diff_navn = ['file_name', 'quad_high', 'quad_low']
-    for path in paths:
-        j = path[1:]
-        df_difference = pd.DataFrame(j, columns=diff_navn)
-        df_difference.set_index('file_name', inplace=True)
-        df_difference.to_csv(path_or_buf=path[0], sep=';', mode='w')
-    return [paths[0][0], paths[1][0]], diff_navn
+    df_difference = pd.DataFrame(list_to_df, columns=val_navn)
+    df_difference.to_csv(path_or_buf=path, sep=';', mode='w', index=False)
+    return path
 
 
 def get_size_file(filepath):

@@ -478,6 +478,7 @@ som gjelder for en bestemt type.
 returnerer:
 df_marker_of_change"""
 
+
 def get_changing_attributes(df_path_files, folder_names):
     df_marker_of_change = df_path_files.copy()  # copy for at lhs blir uavhengig av rhs
     for folder in folder_names:
@@ -719,7 +720,7 @@ def get_category(list_attributes, attribute_types, paths, elements_corrupted_fil
         comb_str_list = combine_str(attributes, attribute_type)
         for comb_str in comb_str_list:
             for j, path in enumerate(paths):
-                if comb_str in path and (j not in elements_corrupted_files and j not in list_exluded_files):
+                if comb_str in path[1]:
                     category[i].append(comb_str)
                     indices[i].append(p)
                     p += 1
@@ -791,7 +792,7 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
                 # plt.figure(i)
                 # i += 1
                 for name, group in groups:
-                    axis[i].plot(group['indices_true'], group[diff_name], marker="", linestyle="-", label=name)
+                    axis[i].plot(group['indices_true'], group[diff_name], marker="o", linestyle="-", label=name)
                     axis[i].legend()
                     axis[i].set_xlabel('modellnummer')
                     axis[i].set_ylabel('differanse av ' + par_navn + ' ' + enhet)
@@ -838,27 +839,25 @@ def get_filenames_col_csv(paths_fil_csv, path_arbeidsmappe):
     return file_names_csv
 
 
-def create_difference_csv(foldername_csv, list_differences, parameternavn_interpret, paths_fil_csv, path_arbeidsmappe,
-                          elements_corrupted_files, type_verdi, path_data_storage):
-    paths_csv = paths_fil_csv.copy()
+def create_difference_csv(foldername_csv, list_differences, parameternavn_interpret, paths_fil_csv,
+                          type_verdi, path_data_storage, twolines_no_corrupt):
     if all(path is None for path in paths_fil_csv):
         return None, None
     t = path_data_storage
     t = alternate_slash([t])[0]
-    filnavn_csv = get_filenames_col_csv(paths_csv, path_arbeidsmappe)
     p = parameternavn_interpret.copy()
     p.pop()
-    # fjerner de paths som er korruperte
-    paths_to_remove = get_subset_file_paths(paths_fil_csv, elements_corrupted_files)
-    names_to_remove = [re.findall(r'/(?:.(?!/))+$', path)[0][1:] for path in paths_to_remove]
-    names_to_remove = [name.replace('.csv', '') for name in names_to_remove]
-    names_to_remove = names_to_remove + ['S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x7',
-                                         'S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x-7']
-    filnavn_csv = [name for name in filnavn_csv if name not in names_to_remove]
+    paths_2lines = []
+    # for path in twolines_no_corrupt:
+    #     p = path[1]
+    #     z = re.findall(r'/(?:.(?!/))+$', p)[0][1:]
+    #     paths_2lines.append(z)
+    paths_2lines = [re.findall(r'/(?:.(?!/))+$', path[1])[0][1:] for path in twolines_no_corrupt]
+    navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
     # lager paths til der hvor differensene skal lagres
     paths = [[t + '/' + foldername_csv + type_verdi + '_' + navn.replace(':', '').replace(' ', '') + '.csv'] for navn in p]
     # df_differences = pd.DataFrame(columns=['file_name', 'quad_low', 'quad_high'])
-    for navn, differences in zip(filnavn_csv, list_differences):
+    for navn, differences in zip(navn_2lines, list_differences):
         d = list(map(list, zip(*differences)))  # transposes the list of lists
         for path, difference in zip(paths, d):
             path.append([navn] + difference)
@@ -872,28 +871,23 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
     return [paths[0][0], paths[1][0]], diff_navn
 
 
-def create_values_csv(foldername_csv, list_values, parameternavn_interpret, paths_fil_csv, path_arbeidsmappe,
-                      elements_corrupted_files, type_verdi, path_data_storage, val_navn):
-    paths_csv = paths_fil_csv.copy()
+def create_values_csv(foldername_csv, list_values, parameternavn_interpret, paths_fil_csv,
+                      elements_corrupted_files, type_verdi, path_data_storage, val_navn, list_2lines_inside):
     if all(path is None for path in paths_fil_csv):
         return None, None
     t = path_data_storage
     t = alternate_slash([t])[0]
-    filnavn_csv = get_filenames_col_csv(paths_csv, path_arbeidsmappe)
     p = parameternavn_interpret.copy()
     p.pop()
     # fjerner de paths som er korruperte
-    paths_to_remove = get_subset_file_paths(paths_fil_csv, elements_corrupted_files)
-    names_to_remove = [re.findall(r'/(?:.(?!/))+$', path)[0][1:] for path in paths_to_remove]
-    names_to_remove = [name.replace('.csv', '') for name in names_to_remove]
-    names_to_remove = names_to_remove + ['S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x7',
-                                         'S_bm80_ss1_k1_od500_m5.0_v22.5_y0_x-7']
-    filnavn_csv = [name for name in filnavn_csv if name not in names_to_remove]
+    paths_2lines = get_paths_zone2lines(paths_fil_csv, elements_corrupted_files, list_2lines_inside)
+    paths_2lines = [re.findall(r'/(?:.(?!/))+$', path[1])[0][1:] for path in paths_2lines]
+    navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
     # lager paths til der hvor verdiene skal lagres
     path = t + '/' + foldername_csv + type_verdi + '.csv'
     # df_differences = pd.DataFrame(columns=['file_name', 'quad_low', 'quad_high'])
     list_to_df = []
-    for navn, values in zip(filnavn_csv, list_values):
+    for navn, values in zip(navn_2lines, list_values):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
         list_to_df.append([navn] + values)
     # df_differences.to_csv(path_or_buf=path, sep=';', mode='w')
@@ -925,15 +919,24 @@ def get_elements_small_files(file_sizes):
     return elements
 
 
-def get_subset_file_paths(file_paths, elements):
-    sub_paths = [path for i, path in enumerate(file_paths) if elements.count(i) > 0]
-    return sub_paths
+def get_corrupted_file_paths(file_paths, elements_corrupted_files):
+    if elements_corrupted_files is None:
+        corrupted_paths = ['']
+    else:
+        corrupted_paths = [path for i, path in enumerate(file_paths) if elements_corrupted_files.count(i) > 0]
+    return corrupted_paths
+
+
+def get_paths_zone2lines(file_paths, elements_corrupted_files, twolines_inside):
+    corrupted_paths = get_corrupted_file_paths(file_paths, elements_corrupted_files)
+    paths = [iteration for iteration in twolines_inside if iteration[0] not in corrupted_paths]
+    return paths
 
 
 def set_corrupted_files(file_paths, path_list_corrupted_files):
     file_sizes = get_list_size_files(file_paths)
     elements_corrupted_files = get_elements_small_files(file_sizes)
-    corrupted_files = get_subset_file_paths(file_paths, elements_corrupted_files)
+    corrupted_files = get_corrupted_file_paths(file_paths, elements_corrupted_files)
     with open(path_list_corrupted_files, mode='a') as file:
         file.writelines('\n'.join(corrupted_files))
         file.write('\n')
@@ -951,9 +954,11 @@ def get_list_paths(folder_name, df_paths):
 
 def get_elements_corrupted_files(file_paths):
     if all(path is None for path in file_paths):
-        return
+        return None
     file_sizes = get_list_size_files(file_paths)
     elements = get_elements_small_files(file_sizes)
+    if not elements:
+        elements = None
     return elements
 
 
@@ -996,3 +1001,23 @@ def get_tunnel_boundary_points(data, index_boundary1):
         tunnel_boundary_points.append(line)
     return tunnel_boundary_points
 
+
+def create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                           points_to_check, sti_list_variables_2lines_calculations, mappenavn_til_rs2):
+    iterable = [list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                points_to_check]
+    list_of_df_2lines_info, colnames_of_dfs_2lines_info = [], []
+    for sti_variables, it in zip(sti_list_variables_2lines_calculations, iterable):
+        list_of_df_2lines_info.append([]), colnames_of_dfs_2lines_info.append([])
+        d = {navn.replace('/rs2', ''): i for navn, i in zip(mappenavn_til_rs2, it)}
+        df = pd.DataFrame({k: pd.Series(v) for k, v in d.items()})
+        df.to_pickle(path=sti_variables)
+        list_of_df_2lines_info.append(df), colnames_of_dfs_2lines_info.append(df.head())
+    return list_of_df_2lines_info, colnames_of_dfs_2lines_info
+
+
+def clean_alt_list(list_):
+    list_ = list_.replace(', ', '","')
+    list_ = list_.replace('[', '["')
+    list_ = list_.replace(']', '"]')
+    return list_

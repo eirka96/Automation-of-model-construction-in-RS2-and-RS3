@@ -1,4 +1,6 @@
 # import Automatisering_RS2.source.filbehandling.make_objects as mo
+import pandas as pd
+
 from Automatisering_RS2.source.alter_geometry.model_construction import model_construction_RS2 as mc
 import numpy as np
 from Automatisering_RS2.source.filbehandling import make_objects as mo
@@ -12,8 +14,9 @@ fil.
 
 
 def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_rs2_file,
-                   list_which_material, ant_pkt_sone_ytre=4, ant_linjer_sone=2, diameter_tunnel=10,
-                   n_points_tunnel_boundary=360, ytre_grenser_utstrekning=150):
+                   list_which_material, list_0lines_inside, list_1line_inside, list_2lines_inside,
+                   list_excluded_files_2linescalc, iterationnumber, points_to_check, path_of_csv_file, ant_pkt_sone_ytre=4,
+                   ant_linjer_sone=2, diameter_tunnel=10, n_points_tunnel_boundary=360, ytre_grenser_utstrekning=150):
     # henter kildefilen til RS2, lagret som .fea
     with open(path_of_rs2_file, 'r') as file:
         data = file.readlines()
@@ -102,8 +105,7 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     points_tunnel_boundary0 = data[index_boundary1:index_boundary1+ib.n_points_ib].copy()
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
-    # indekser der data skal hentes ut blir her bestemt, returneres til main
-    points_to_check = bl.sort_weakness_points()
+
     # endre materials mesh i kildekoden til RS2, element 1
     mls = mc.Materials(index_material_mesh, punkter_indre, ytre_grenser_utstrekning, ant_linjer_sone, quad, punkter_ytre, data,
                        n_points_tunnel_boundary, index_boundary1, diameter_tunnel, vinkel_sone, points_tunnel_boundary,
@@ -112,7 +114,18 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     # and write everything back
     with open(path_of_rs2_file, 'w') as file:
         file.writelines(data)
-    return points_to_check
+    if all(points is None for points in punkter_indre):
+        list_0lines_inside.append([path_of_rs2_file, path_of_csv_file])
+        list_excluded_files_2linescalc.append(iterationnumber)
+        points_to_check.append(None)
+    elif any(points is None for points in punkter_indre):
+        list_1line_inside.append([path_of_rs2_file, path_of_csv_file])
+        list_excluded_files_2linescalc.append(iterationnumber)
+        points_to_check.append(None)
+    else:
+        list_2lines_inside.append([path_of_rs2_file, path_of_csv_file])
+        points_to_check.append(punkter_indre)
+    return
 
 
 """
@@ -122,36 +135,13 @@ sørger for å returnere de punkter hvor linjelementene som definerer svakhetsso
 """
 
 
-def get_parameters(df_stier_rs2filer, mappenavn_til_rs2, mappenavn_til_csv):
-    points_to_check = []
-    p = 4
-    i = 0
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-        points_to_check.append([])
-        for j in range(df_stier_rs2filer.shape[0]):
-            if j == 135 or j == 149:
-                p = 2
-            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-            if isinstance(path_fil_rs2, str):
-                with open(path_fil_rs2, 'r') as file:
-                    data = file.readlines()
-                # henter nøkkelelementer i listen data bassert på unike nøkkelord, som blir brukt til å navigere tekseditoren
-                index_boundary1 = data.index("  boundary 1 start:\n") + 6
-                index_boundary3 = data.index("  boundary 3 start:\n") + 6
-                index_boundary4 = data.index("  boundary 4 start:\n") + 6
-                points_tunnel_boundary0 = mo.get_tunnel_boundary_points(data, index_boundary1)
-                # making list of points stored as float:
-                points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
-                points_wb3 = data[index_boundary3:index_boundary3+p].copy()
-                points_wb4 = data[index_boundary4:index_boundary4+p].copy()
-                points_wb3 = mc.prep_points_tunnel_boundary(points_wb3, data, index_boundary3)
-                points_wb4 = mc.prep_points_tunnel_boundary(points_wb4, data, index_boundary4)
-                if j == 135 or j == 149:
-                    points_to_check[i].append(None)
-                else:
-                    points_to_check[i].append([points_wb3[1], points_wb3[2], points_wb4[1], points_wb4[2]])
-                p = 4
-        i += 1
-        p = 4
-    return points_to_check
+def get_parameters_2lines_inside(sti_list_variables_2lines_calculations):
+    list_of_df_2lines_info = []
+    colnames_of_dfs_2lines_info = []
+    for sti_variables_2lines in sti_list_variables_2lines_calculations:
+        df = pd.read_pickle(filepath_or_buffer=sti_variables_2lines)
+        list_of_df_2lines_info.append(df)
+        colnames_of_df = df.head()
+        colnames_of_dfs_2lines_info.append(colnames_of_df)
+    return list_of_df_2lines_info, colnames_of_dfs_2lines_info
 

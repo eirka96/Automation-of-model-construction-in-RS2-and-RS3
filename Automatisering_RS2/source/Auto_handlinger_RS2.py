@@ -21,7 +21,9 @@ def klargjore_rs2(df_koordinater_mus, navn_kol, i=0, time=None):
     return i
 
 
-def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, list_which_material, i, j):
+def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, list_which_material,
+                list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                points_to_check, i, j):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
     vinkel = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
@@ -30,36 +32,38 @@ def alter_model(path_of_rs2_file, df_endrede_attributter_rs2filer, mappenavn_til
         forflytning_x = 0.99
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
     # print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
-    points_to_check = go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
-                                        list_which_material)
-    return points_to_check
+    go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
+                      list_which_material, list_0lines_inside, list_1line_inside, list_2lines_inside,
+                      list_excluded_files_2linescalc, i, points_to_check, path_of_csv_file)
+    return
 
 
 def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
     if time is None:
         time = time_list
-    # pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-    #           interval=time[1])  # velg stage 2
+    pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+              interval=time[1])  # velg stage 2
     i += 1
     pag.click(144, 102, interval=time[1])
     pag.click(218, 194, interval=time[1])
     pag.click(346, 191, interval=time[1])
+    pag.hotkey('f6', interval=time[1])
+    pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+                   interval=time[1])  # velg boundary, høyreklikk
+    i += 1
+    pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+              interval=time[1])  # delete boundary
+    i += 1
+    pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
     return i
 
 
 def store_results_in_csv(df_koordinates_mouse, name_col_df, path_fil_csv, navn_parameter, i=0, time=None):
     if time is None:
         time = time_list
-    if i == 1:
+    if i == 3:
         sr = pd.DataFrame([navn_parameter])
         sr.to_csv(path_or_buf=path_fil_csv, mode='w', sep=';', header=False, index=False)
-        pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                       interval=time[1])  # velg boundary, høyreklikk
-        i += 1
-        pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                  interval=time[1])  # velg query boundary
-        i += 1
-        pag.press('enter', interval=time[1])
         pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
                        interval=time[1])  # velg boundary 1ste gang, høyreklikk
         i += 1

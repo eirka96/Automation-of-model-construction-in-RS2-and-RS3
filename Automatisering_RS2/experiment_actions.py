@@ -28,10 +28,12 @@ def pause_script():
 
 
 def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
-                             df_endrede_attributter_rs2filer, list_which_material):
-    i = 0
-    points_to_check = []
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+                             df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
+                             list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                             points_to_check, sti_list_variables_2lines_calculations):
+    for i, (navn_rs2, navn_csv) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv)):
+        list_0lines_inside.append([]), list_1line_inside.append([]), list_2lines_inside.append([]),
+        list_excluded_files_2linescalc.append([]), points_to_check.append([])
         for j in range(df_stier_rs2filer.shape[0]):
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
@@ -39,11 +41,13 @@ def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2f
             print(path_fil_csv)
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
-                points = Auto.alter_model(path_fil_rs2, df_endrede_attributter_rs2filer, mappenavn_til_rs2,
-                                          list_which_material, i, j)
-                points_to_check.append(points)
-        i += 1
-    return points_to_check
+                Auto.alter_model(path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer, mappenavn_til_rs2,
+                                 list_which_material, list_0lines_inside[i], list_1line_inside[i],
+                                 list_2lines_inside[i], list_excluded_files_2linescalc[i],
+                                 points_to_check[i], i, j)
+    mo.create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                              points_to_check, sti_list_variables_2lines_calculations, mappenavn_til_rs2)
+    return
 
 
 def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time):
@@ -57,7 +61,7 @@ def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stie
                 # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
                 # pyautogui operasjoner begynner her
                 pag.leftClick(927, 490, interval=time[2])
-                pag.hotkey('alt', 'f4', interval=time[2])
+                # pag.hotkey('alt', 'f4', interval=time[2])
                 # lage diskretisering og mesh
                 pag.hotkey('ctrl', 'm', interval=time[2])
                 pag.hotkey('ctrl', 's', interval=time[2])
@@ -86,7 +90,6 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
                 Popen([path_rs2_interpret, path_fil_rs2])
                 sleep(10)
                 i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
-                pag.hotkey('f6', interval=time[1])
                 for k in range(ant_parametere_interpret):
                     navn_parameter = parameter_navn_interpret[k]
                     i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,
@@ -104,39 +107,31 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
         k += 1
 
 
-def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
-                            df_stier_csvfiler, points_to_check, sti_til_mappe_for_arbeidsfiler,
-                            sti_til_mapper_endelige_filer, list_excluded_files, valnavn):
-    k = 0
+def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
+                            df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
+                            list_excluded_files_2linescalc, list_valnavn, list_2lines_inside):
     list_differences = mo.make_container_diff(mappenavn_til_rs2)
     list_values = mo.make_container_diff(mappenavn_til_rs2)
     parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
     list_paths_differences = []
     list_diff_navn = []
     list_path_values = []
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+    for k, (navn_rs2, navn_csv, excluded_files, (twolines_colname, twolines_inside), (points_check_colname, points_to_check), valnavn) in \
+            enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv, list_excluded_files_2linescalc, list_2lines_inside.iteritems(),
+                          list_points_to_check.iteritems(), list_valnavn)):
         # element_files_corrupted er definert mtp en treshold for filstørrelse, da de filer hvor feilklikking inntreffer
         # viser ca 1/3 mindre størrelse.
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
         list_paths_differences.append([])
         list_diff_navn.append([])
         list_path_values.append([])
-        if elements_files_corrupted is not None:
-            check = elements_files_corrupted.copy()
-        else:
-            check = [None]
-        for j in range(df_stier_rs2filer.shape[0]):
-            path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-            path_fil_csv = df_stier_csvfiler[navn_csv][j]
-            if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
-                if j == check[0]:
-                    if len(check) > 1:
-                        check.pop(0)
-                    continue
-                elif j in list_excluded_files:
-                    continue
-                points = points_to_check[k][j]
-                query_values = mo.get_Query_values(path_fil_csv, parameter_navn_interpret0)
+        if not twolines_inside.isnull().values.any():
+            twolines_no_corrupt = mo.get_paths_zone2lines(df_stier_csvfiler[navn_csv], elements_files_corrupted,
+                                                          twolines_inside)
+            for j, (stier, points) in enumerate(zip(twolines_no_corrupt, points_to_check)):
+                print(stier)
+                rs2_sti, csv_sti = stier[0], stier[1]
+                query_values = mo.get_Query_values(csv_sti, parameter_navn_interpret0)
                 to_plot = mo.get_values_to_plot(query_values)
                 query_positions = mo.get_query_positions(query_values)
                 differences = mo.get_difference(to_plot, points, query_positions)
@@ -150,28 +145,30 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                     list_differences[k].append(differences)
                 if all(value is not None for value in values_to_plot):
                     list_values[k].append(values_to_plot)
-                # mo.plot_data(to_plot, parameter_navn_interpret)
-        paths_fil_csv = df_stier_csvfiler[navn_csv]
-        paths_differences, diff_navn = mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret,
-                                                                paths_fil_csv, sti_til_mappe_for_arbeidsfiler,
-                                                                elements_files_corrupted, 'differenser',
-                                                                sti_til_mapper_endelige_filer)
-        list_paths_differences[k] = paths_differences
-        list_diff_navn[k] = diff_navn
-        path_value = mo.create_values_csv(navn_csv, list_values[k], parameter_navn_interpret, paths_fil_csv, sti_til_mappe_for_arbeidsfiler,
-                                          elements_files_corrupted, 'values',
-                                          sti_til_mapper_endelige_filer, valnavn)
-        list_path_values[k] = path_value
-        k += 1
+            paths_fil_csv = df_stier_csvfiler[navn_csv]
+            paths_differences, diff_navn = mo.create_difference_csv(navn_csv, list_differences[k], parameter_navn_interpret,
+                                                                    paths_fil_csv, 'differenser',
+                                                                    sti_til_mapper_endelige_filer, twolines_no_corrupt)
+            list_paths_differences[k] = paths_differences
+            list_diff_navn[k] = diff_navn
+            path_value = mo.create_values_csv(navn_csv, list_values[k], parameter_navn_interpret, paths_fil_csv,
+                                              elements_files_corrupted, 'values', sti_til_mapper_endelige_filer, valnavn,
+                                              twolines_inside)
+            list_path_values[k] = path_value
     return list_paths_differences, list_diff_navn, list_path_values
 
 
-def execute_plots(list_paths_differences, list_diff_navn, list_path_values, valnavn,
+def execute_plots(list_paths_differences, list_diff_navn, list_path_values, list_valnavn,
                   mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_exluded_files, color_map):
-    for navn_rs2, navn_csv, paths_differences, diff_navn, path_value in zip(
-            mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values):
+                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_exluded_files_2linescalc,
+                  list_color_map, list_2lines_inside):
+    for navn_rs2, navn_csv, paths_differences, diff_navn, path_value, (exl_files_colname, exluded_files), color_map, \
+        valnavn, (twolines_colname, twolines_inside) in zip(
+            mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values,
+            list_exluded_files_2linescalc.iteritems(), list_color_map, list_valnavn, list_2lines_inside.iteritems()):
         if paths_differences is None:
+            continue
+        if twolines_inside.isnull().values.any():
             continue
         parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
@@ -182,13 +179,11 @@ def execute_plots(list_paths_differences, list_diff_navn, list_path_values, valn
         #                                                                                 df_stier_csvfiler[navn_csv],
         #                                                                                 elements_files_corrupted)
         list_category, list_indices = mo.get_category(list_of_lists_attributes, attribute_type,
-                                                      df_stier_csvfiler[navn_csv], elements_files_corrupted,
-                                                      list_exluded_files)
-        # mo.plot_difference_selection(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
-        #                              list_category, list_indices, attribute_type, color_map)
+                                                      twolines_inside, elements_files_corrupted,
+                                                      exluded_files)
+        mo.plot_difference_selection(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
+                                     list_category, list_indices, attribute_type, color_map)
         mo.plot_value_selection(path_value, parameter_navn_interpret0, diff_navn, valnavn, fysiske_enheter,
                                 list_category, list_indices, attribute_type, color_map)
-        # mo.plot_difference_selection0(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
-        #                               indices_selection_true, indices_selection_augm)
-    return
 
+    return

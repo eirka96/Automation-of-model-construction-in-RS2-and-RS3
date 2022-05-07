@@ -745,9 +745,9 @@ def plot_value_selection(path, parameter_navn, diff_navn, val_navn, fysiske_enhe
     val_navn.pop(0)
     df = get_df_differences_from_csv(path)
     df = df.iloc[:, 1:]
-    for column in df:
-        print(column)
-        df[column] = df[column].apply(literal_eval)
+    # for column in df:
+    #     print(column)
+    #     df[column] = df[column].apply(literal_eval)
     list_df_indices = get_start_index_df_value(parameter_navn, diff_navn)
     for k, (par_navn, enhet) in enumerate(zip(parameter_navn, fysiske_enheter)):
         for category, indices, type0 in zip(list_category, list_indices, attribute_type):
@@ -761,7 +761,7 @@ def plot_value_selection(path, parameter_navn, diff_navn, val_navn, fysiske_enhe
                     range0 = val_navn[list_df_indices[k][i]]
                     range1 = val_navn[list_df_indices[k][i]+1]
                     axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="--", label=name)
-                    axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="--", label=name)
+                    # axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="--", label=name)
                     axis[i].plot(group['indices_true'], group[[range1]], marker="o", linestyle="--", label=name)
                     axis[i].legend()
                     axis[i].set_xlabel('modellnummer')
@@ -1003,12 +1003,13 @@ def get_tunnel_boundary_points(data, index_boundary1):
 
 
 def create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                           points_to_check, sti_list_variables_2lines_calculations, mappenavn_til_rs2):
+                           list_points_to_check, sti_list_variables_2lines_calculations, mappenavn_til_rs2,
+                           list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points):
     iterable = [list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                points_to_check]
+                list_points_to_check, list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points]
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = [], []
     for sti_variables, it in zip(sti_list_variables_2lines_calculations, iterable):
-        list_of_df_2lines_info.append([]), colnames_of_dfs_2lines_info.append([])
+        # list_of_df_2lines_info.append([]), colnames_of_dfs_2lines_info.append([])
         d = {navn.replace('/rs2', ''): i for navn, i in zip(mappenavn_til_rs2, it)}
         df = pd.DataFrame({k: pd.Series(v) for k, v in d.items()})
         df.to_pickle(path=sti_variables)

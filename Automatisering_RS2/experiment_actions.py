@@ -30,10 +30,13 @@ def pause_script():
 def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
                              df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
                              list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                             points_to_check, sti_list_variables_2lines_calculations):
+                             list_points_to_check, sti_list_variables_2lines_calculations,
+                             list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points):
     for i, (navn_rs2, navn_csv) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv)):
         list_0lines_inside.append([]), list_1line_inside.append([]), list_2lines_inside.append([]),
-        list_excluded_files_2linescalc.append([]), points_to_check.append([])
+        list_excluded_files_2linescalc.append([]), list_points_to_check.append([]),
+        list_iternumber_0.append([]), list_iternumber_1.append([]), list_iternumber_2.append([]),
+        ll_inner_points.append([])
         for j in range(df_stier_rs2filer.shape[0]):
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
@@ -44,10 +47,16 @@ def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2f
                 Auto.alter_model(path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer, mappenavn_til_rs2,
                                  list_which_material, list_0lines_inside[i], list_1line_inside[i],
                                  list_2lines_inside[i], list_excluded_files_2linescalc[i],
-                                 points_to_check[i], i, j)
-    mo.create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                              points_to_check, sti_list_variables_2lines_calculations, mappenavn_til_rs2)
-    return
+                                 list_points_to_check[i], i, j, list_iternumber_0[i], list_iternumber_1[i],
+                                 list_iternumber_2[i], ll_inner_points[i])
+            else:
+                ll_inner_points[i].append(None)
+    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
+        mo.create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside,
+                                  list_excluded_files_2linescalc, list_points_to_check,
+                                  sti_list_variables_2lines_calculations, mappenavn_til_rs2,
+                                  list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points)
+    return list_of_df_2lines_info, colnames_of_dfs_2lines_info
 
 
 def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time):
@@ -79,11 +88,13 @@ def calculate(path_rs2_compute, time):
 
 
 def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
-               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time):
+               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
+               list_excluded_files_2linescalc, ll_inner_points):
     i = 0
     k = 0
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
-        for j in range(df_stier_rs2filer.shape[0]):
+    for navn_rs2, navn_csv, (colname_innerpoints, l_inner_points) in zip(
+            mappenavn_til_rs2, mappenavn_til_csv, ll_inner_points.iteritems()):
+        for j, innerpoints in enumerate(l_inner_points):
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
@@ -166,8 +177,6 @@ def execute_plots(list_paths_differences, list_diff_navn, list_path_values, list
         valnavn, (twolines_colname, twolines_inside) in zip(
             mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values,
             list_exluded_files_2linescalc.iteritems(), list_color_map, list_valnavn, list_2lines_inside.iteritems()):
-        if paths_differences is None:
-            continue
         if twolines_inside.isnull().values.any():
             continue
         parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)

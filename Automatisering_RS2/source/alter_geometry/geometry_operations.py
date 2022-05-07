@@ -14,8 +14,9 @@ fil.
 
 
 def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighet_sone, path_of_rs2_file,
-                   list_which_material, list_0lines_inside, list_1line_inside, list_2lines_inside,
-                   list_excluded_files_2linescalc, iterationnumber, points_to_check, path_of_csv_file, ant_pkt_sone_ytre=4,
+                   list_which_material, _0lines_inside, _1line_inside, _2lines_inside,
+                   _excluded_files_2linescalc, iterationnumber, _points_to_check, path_of_csv_file,
+                   l_inner_points, _iternumber_0, _iternumber_1, _iternumber_2, ant_pkt_sone_ytre=4,
                    ant_linjer_sone=2, diameter_tunnel=10, n_points_tunnel_boundary=360, ytre_grenser_utstrekning=150):
     # henter kildefilen til RS2, lagret som .fea
     with open(path_of_rs2_file, 'r') as file:
@@ -115,16 +116,20 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     with open(path_of_rs2_file, 'w') as file:
         file.writelines(data)
     if all(points is None for points in punkter_indre):
-        list_0lines_inside.append([path_of_rs2_file, path_of_csv_file])
-        list_excluded_files_2linescalc.append(iterationnumber)
-        points_to_check.append(None)
+        _0lines_inside.append([path_of_rs2_file, path_of_csv_file])
+        _iternumber_0.append(iterationnumber)
+        _excluded_files_2linescalc.append(iterationnumber)
+        _points_to_check.append(None)
     elif any(points is None for points in punkter_indre):
-        list_1line_inside.append([path_of_rs2_file, path_of_csv_file])
-        list_excluded_files_2linescalc.append(iterationnumber)
-        points_to_check.append(None)
+        _1line_inside.append([path_of_rs2_file, path_of_csv_file])
+        _excluded_files_2linescalc.append(iterationnumber)
+        _iternumber_1.append(iterationnumber)
+        _points_to_check.append(None)
     else:
-        list_2lines_inside.append([path_of_rs2_file, path_of_csv_file])
-        points_to_check.append(punkter_indre)
+        _2lines_inside.append([path_of_rs2_file, path_of_csv_file])
+        _points_to_check.append(punkter_indre)
+        _iternumber_2.append(iterationnumber)
+    l_inner_points.append(punkter_indre)
     return
 
 

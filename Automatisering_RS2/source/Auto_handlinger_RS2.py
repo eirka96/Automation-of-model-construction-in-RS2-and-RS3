@@ -22,8 +22,8 @@ def klargjore_rs2(df_koordinater_mus, navn_kol, i=0, time=None):
 
 
 def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, list_which_material,
-                list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                points_to_check, i, j):
+                _0lines_inside, _1line_inside, _2lines_inside, _excluded_files_2linescalc,
+                _points_to_check, i, j, _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
     vinkel = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
@@ -33,8 +33,9 @@ def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2fi
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
     # print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
     go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
-                      list_which_material, list_0lines_inside, list_1line_inside, list_2lines_inside,
-                      list_excluded_files_2linescalc, i, points_to_check, path_of_csv_file)
+                      list_which_material, _0lines_inside, _1line_inside, _2lines_inside,
+                      _excluded_files_2linescalc, i, _points_to_check, path_of_csv_file,
+                      _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points)
     return
 
 

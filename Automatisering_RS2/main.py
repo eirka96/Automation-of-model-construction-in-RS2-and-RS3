@@ -61,7 +61,7 @@ if command == 'j':
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
-    y_attributes, x_attributes = 80, 1, 1, 500, 3, 22.5, 0, [0, 2, 1]
+    y_attributes, x_attributes = 80, 1, 1, 500, 10, 22.5, [-20, 21, 10], 0
     overdekninger = [25, 100, 200, 300, 500, 800, 1000]
     # definerer en liste over alle attributter (attributes_list, samt en liste over de attributter som skal varieres
     # (list_of_lists_attributes). Brukes i plotte_funksjonene.
@@ -91,9 +91,9 @@ if command == 'j':
     main_stringobjects = pd.read_csv(r'C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave'
                                      r'\modellering_svakhetssone\parameterstudie\excel\Pycharm_automatisering'
                                      r'\liste_stringObjects_main_vivoBook.csv ', sep=';')
-    list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
-        list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
-        [], [], [], [], [], [], [], [], []
+    # list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
+    #     list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
+    #     [], [], [], [], [], [], [], [], []
     # path til csv for lagring av konstrerte filnavn som er tuftet på parameterverdiene over og har struktur:
     # S_bm80_ss1_k1_od500_m4_v22.5_x0_y0.
     # S: sirkulær kontur,
@@ -168,10 +168,10 @@ if command == 'j':
     mappenavn_til_rs2, mappenavn_til_csv = mo.get_name_folders(sti_til_mapper_endelige_filer)
 
     # her stilles spm om det vil startes et nytt eksperiment, hvis ja så blir det dannet nye filer og de gamle forkastes
-    change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
-                                 sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
-    if change[0]:
-        df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
+    # change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
+    #                              sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
+    # if change[0]:
+    #     df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
 
     # df_endrede_attributter_rs2filer er en df som inneholder alle de endringer som hver fil skal igjennom.
     # Den har samme struktur som df_stier_rs2filer, men hver celle inneholder en pandas-'Series' der
@@ -186,14 +186,14 @@ if command == 'j':
     time = [0, 0.7, 1, 2, 5]
 
     "her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"
-    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-        ea.execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
-                                    df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
-                                    list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
-                                    list_points_to_check, sti_list_variables_2lines_calculations,
-                                    list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points)
     # list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-    #     go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
+    #     ea.execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
+    #                                 df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
+    #                                 list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+    #                                 list_points_to_check, sti_list_variables_2lines_calculations,
+    #                                 list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points)
+    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
+        go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
     list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc, list_points_to_check, \
         list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points = \
         list_of_df_2lines_info[0], list_of_df_2lines_info[1], list_of_df_2lines_info[2], list_of_df_2lines_info[3], \
@@ -201,18 +201,18 @@ if command == 'j':
         list_of_df_2lines_info[8]
 
     """her lages diskretisering og mesh til alle modellene"""
-    ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time)
+    # ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 
     så fortsetter scriptet. Det er viktig å sørge for at rs2_compute allerede finner den mappen som filene ligger i.
     """
-    ea.calculate(path_rs2_compute, time)
+    # ea.calculate(path_rs2_compute, time)
 
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
-    ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
-                  df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
-                  list_excluded_files_2linescalc, ll_inner_points)
+    # ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
+    #               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
+    #               list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
     list_paths_differences, list_diff_navn, list_paths_values = \

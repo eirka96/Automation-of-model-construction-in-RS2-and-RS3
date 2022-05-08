@@ -109,7 +109,7 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
                 sr = pd.DataFrame(['end'])
                 sr.to_csv(path_or_buf=path_fil_csv, mode='a', sep=';', header=False, index=False)
                 # lukke interpret
-                pag.press('ctrl', 's', interval=time[1])
+                pag.hotkey('ctrl', 's', interval=time[1])
                 pag.hotkey('alt', 'f4', interval=time[1])
                 # # lukke programmet
                 # pag.hotkey('ctrl', 's', interval=time[1])

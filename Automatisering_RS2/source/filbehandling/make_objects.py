@@ -121,7 +121,7 @@ def get_old_paths_df(sti_csv_gamle_rs2stier, sti_csv_gamle_csvStier):
 
 
 def get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2, sti_kildefil_csv,
-                     sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier):
+                     sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier, parameter_verdier_mappenavn):
     while True:
         try:
             command = input('Vil du lage nye rs2-filer? j for ja og n for nei: ')
@@ -129,7 +129,8 @@ def get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_fil
                 # I create_folders:
                 # vil mapper fra forrige prosjekt eventuelt bli slettet og mappene
                 # til det nye prosjekt blir laget hvis dette er tilfelle
-                delete_and_create_folders(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer)
+                delete_and_create_folders(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer,
+                                          parameter_verdier_mappenavn)
                 # mappenavn_til_rs2, mappenavn_til_csv = get_name_folders(sti_til_mapper_endelige_filer)
                 # copy_and_store:
                 # lager alle kopiene av kildefilene og lagrer filene i rett mappe.
@@ -208,11 +209,9 @@ def make_file_name(parameter_verdier_csv, geometri='S'):
 """beskrivelsen for denne er identisk med den over bare at denne er tilpasset for mappenavn
 parameter_verdier_excel har en annen sti og det blir ikke lagt til .fea i enden av navnet."""
 
-def make_folder_name(geometri='S'):
-    parameter_verdier_csv = r"C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone" \
-                            r"\parameterstudie" \
-                            r"\excel\Pycharm_automatisering\parameter_verdier_mappenavn.csv "
-    df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
+
+def make_folder_name(parameter_verdier_mappenavn, geometri='S'):
+    df_verdier = pd.read_csv(parameter_verdier_mappenavn, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
     folder_name_list = []
     for i in range((df_verdier.shape[0])):
@@ -228,10 +227,10 @@ def make_folder_name(geometri='S'):
     return folder_name_list
 
 
-def delete_and_create_folders(storage_path, storage_final_folders):
+def delete_and_create_folders(storage_path, storage_final_folders, parameter_verdier_mappenavn):
     storage_path = alternate_slash([storage_path])[0]
     storage_final_folders = alternate_slash([storage_final_folders])[0]
-    folder_names = make_folder_name()
+    folder_names = make_folder_name(parameter_verdier_mappenavn)
     folder_paths = folder_names
     for i in range(len(folder_names)):
         folder_paths[i] = (storage_final_folders + '/' + folder_names[i] + '/')

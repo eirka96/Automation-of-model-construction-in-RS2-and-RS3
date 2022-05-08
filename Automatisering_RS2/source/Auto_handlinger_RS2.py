@@ -39,21 +39,41 @@ def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2fi
     return
 
 
+def store_results_csv_prep_init(df_koordinates_mouse, name_col_df, i=0, time=None):
+    if time is None:
+        time = time_list
+    pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+              interval=time[1])  # velg stage 2
+    i += 1
+    pag.hotkey('f6', interval=time[1])
+    # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    #                interval=time[1])  # endre type
+    i += 1
+    # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    #                interval=time[1])  # velg tot sigma
+    i += 1
+    # pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    #           interval=time[1])  # velge sig1
+    i += 1
+    pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
+    return i
+
+
 def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
     if time is None:
         time = time_list
     pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
               interval=time[1])  # velg stage 2
     i += 1
-    pag.click(144, 102, interval=time[1])
-    pag.click(218, 194, interval=time[1])
-    pag.click(346, 191, interval=time[1])
     pag.hotkey('f6', interval=time[1])
     pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-                   interval=time[1])  # velg boundary, høyreklikk
+                   interval=time[1])  # endre type
+    i += 1
+    pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+                   interval=time[1])  # velg tot sigma
     i += 1
     pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
-              interval=time[1])  # delete boundary
+              interval=time[1])  # velge sig1
     i += 1
     pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
     return i

@@ -10,8 +10,7 @@ import pandas as pd
 # Må sørge for at det alltid gjøres et click i det vinduet man ønsker å gjøre operasjoner som er knyttet til
 # hurtigtaster
 
-tekst = r'C:\Users\Eirik\OneDrive\Documents\10.Prosjekt_og_masteroppgave\modellering_svakhetssone\parameterstudie\excel' \
-        r'\Pycharm_automatisering\liste_datamus_koordinater.csv '
+tekst = r'C:\temp\thesis\eksperimenter\eksperiment4\base_modeler\Pycharm_automatisering\liste_datamus_koordinater.csv'
 navn_kolonne = ['Handling', 'x', 'y']
 
 command = ' '  # tømme

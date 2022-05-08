@@ -66,15 +66,15 @@ def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stie
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 Popen([path_rs2, path_fil_rs2])
-                sleep(7)
+                sleep(5)
                 # df_koordinater_mus = mo.transform_coordinates_mouse(sti_koordinater_mus, navn_kol_df_koord_mus, q)
                 # pyautogui operasjoner begynner her
-                pag.leftClick(927, 490, interval=time[2])
+                pag.leftClick(927, 490, interval=time[1])
                 # pag.hotkey('alt', 'f4', interval=time[2])
                 # lage diskretisering og mesh
-                pag.hotkey('ctrl', 'm', interval=time[2])
-                pag.hotkey('ctrl', 's', interval=time[2])
-                pag.hotkey('alt', 'f4', interval=time[2])
+                pag.hotkey('ctrl', 'm', interval=time[1])
+                pag.hotkey('ctrl', 's', interval=time[1])
+                pag.hotkey('alt', 'f4', interval=time[1])
     return
 
 

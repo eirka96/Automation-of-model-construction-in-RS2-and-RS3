@@ -55,7 +55,7 @@ def store_results_csv_prep_init(df_koordinates_mouse, name_col_df, i=0, time=Non
     # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
     #           interval=time[1])  # velge sig1
     i += 1
-    pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
+    pag.hotkey('ctrl', 'e', interval=time[1])  # genererer excavation query, da boundaryline unnlater siste node
     return i
 
 
@@ -75,7 +75,7 @@ def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
     pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
               interval=time[1])  # velge sig1
     i += 1
-    pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
+    pag.hotkey('ctrl', 'e', interval=time[1])  # genererer excavation query, da boundaryline unnlater siste node
     return i
 
 

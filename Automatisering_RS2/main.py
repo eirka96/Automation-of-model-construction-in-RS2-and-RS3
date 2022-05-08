@@ -79,11 +79,11 @@ if command == 'j':
                'quad_low - totaldeformasjon, inbetween']
     list_valnavn = []
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\Users\Eirik\OneDrive'
-                                                             r'\Documents\10.Prosjekt_og_masteroppgave'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'M:\Documents\10.Prosjekt_og_masteroppgave'
                                                              r'\modellering_svakhetssone\parameterstudie\excel'
                                                              r'\Pycharm_automatisering'
-                                                             r'\liste_stier_PycharmProjects_automatisering.txt ')
+                                                             r'\liste_stier_PycharmProjects_automatisering.txt ',
+                                                             sep=';')
     main_stringobjects = pd.read_csv(liste_stier_PycharmProjects_automatisering['object'][0], sep=';')
     # list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
     #     list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \

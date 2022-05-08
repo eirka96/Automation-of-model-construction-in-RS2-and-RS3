@@ -3,6 +3,7 @@ import Automatisering_RS2.source.filbehandling.make_objects as mo
 from Automatisering_RS2.source.alter_geometry import geometry_operations as go
 import plan_experiment as pe
 import experiment_actions as ea
+import Automatisering_RS2.source.sporing_mus.mouse_tracker as mt
 
 """
 
@@ -78,11 +79,18 @@ if command == 'j':
                'quad_low - totaldeformasjon, inbetween']
     list_valnavn = []
     list_valnavn += 7 * [valnavn]
-    main_stringobjects = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperiment4\base_modeler' 
-                                     r'\Pycharm_automatisering\liste_stringObjects_main_vivoBook.csv ', sep=';')
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\Users\Eirik\OneDrive'
+                                                             r'\Documents\10.Prosjekt_og_masteroppgave'
+                                                             r'\modellering_svakhetssone\parameterstudie\excel'
+                                                             r'\Pycharm_automatisering'
+                                                             r'\liste_stier_PycharmProjects_automatisering.txt ')
+    main_stringobjects = pd.read_csv(liste_stier_PycharmProjects_automatisering['object'][0], sep=';')
     # list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
     #     list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
     #     [], [], [], [], [], [], [], [], []
+
+    """ Her er det mulig å gjøre endringer på koordinatene lagret i liste_datamus_koordinater"""
+    # mt.mouse_tracker(liste_stier_PycharmProjects_automatisering['object'][1])
     # path til csv for lagring av konstrerte filnavn som er tuftet på parameterverdiene over og har struktur:
     # S_bm80_ss1_k1_od500_m4_v22.5_x0_y0.
     # S: sirkulær kontur,

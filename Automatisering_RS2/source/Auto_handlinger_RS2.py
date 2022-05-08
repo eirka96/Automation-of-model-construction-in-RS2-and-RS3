@@ -46,13 +46,13 @@ def store_results_csv_prep_init(df_koordinates_mouse, name_col_df, i=0, time=Non
               interval=time[1])  # velg stage 2
     i += 1
     pag.hotkey('f6', interval=time[1])
-    # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    # pag.leftClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
     #                interval=time[1])  # endre type
     i += 1
-    # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    # pag.leftClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
     #                interval=time[1])  # velg tot sigma
     i += 1
-    # pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    # pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
     #           interval=time[1])  # velge sig1
     i += 1
     pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
@@ -66,13 +66,13 @@ def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
               interval=time[1])  # velg stage 2
     i += 1
     pag.hotkey('f6', interval=time[1])
-    pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    pag.leftClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
                    interval=time[1])  # endre type
     i += 1
-    pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    pag.leftClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
                    interval=time[1])  # velg tot sigma
     i += 1
-    pag.click(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
+    pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],
               interval=time[1])  # velge sig1
     i += 1
     pag.hotkey('ctrl', 'e', interval=time[2])  # genererer excavation query, da boundaryline unnlater siste node
@@ -82,7 +82,7 @@ def store_results_csv_prep(df_koordinates_mouse, name_col_df, i=0, time=None):
 def store_results_in_csv(df_koordinates_mouse, name_col_df, path_fil_csv, navn_parameter, i=0, time=None):
     if time is None:
         time = time_list
-    if i == 3:
+    if i == 4:
         sr = pd.DataFrame([navn_parameter])
         sr.to_csv(path_or_buf=path_fil_csv, mode='w', sep=';', header=False, index=False)
         pag.rightClick(df_koordinates_mouse[name_col_df[1]][i], df_koordinates_mouse[name_col_df[2]][i],

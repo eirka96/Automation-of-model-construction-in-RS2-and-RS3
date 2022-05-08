@@ -100,7 +100,7 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 Popen([path_rs2_interpret, path_fil_rs2])
                 sleep(10)
-                i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
+                i = Auto.store_results_csv_prep_init(df_koordinater_mus, navn_kol_df_koord_mus, i)
                 for k in range(ant_parametere_interpret):
                     navn_parameter = parameter_navn_interpret[k]
                     i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,

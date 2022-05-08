@@ -184,7 +184,7 @@ if command == 'j':
     # intervall blir funnet på bakgrunn av testing.
     time = [0, 0.7, 1, 2, 5]
 
-    "her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"
+    """her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"""
     # list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
     #     ea.execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
     #                                 df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
@@ -209,9 +209,9 @@ if command == 'j':
     # ea.calculate(path_rs2_compute, time)
 
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
-    ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
-                  df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
-                  list_excluded_files_2linescalc, ll_inner_points)
+    # ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
+    #               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
+    #               list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
     list_paths_differences, list_diff_navn, list_paths_values = \

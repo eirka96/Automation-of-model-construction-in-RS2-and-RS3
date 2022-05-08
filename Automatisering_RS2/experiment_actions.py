@@ -140,7 +140,9 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
             twolines_no_corrupt = mo.get_paths_zone2lines(df_stier_csvfiler[navn_csv], elements_files_corrupted,
                                                           twolines_inside)
             for j, (stier, points) in enumerate(zip(twolines_no_corrupt, points_to_check)):
+                print(j)
                 print(stier)
+                print(points)
                 rs2_sti, csv_sti = stier[0], stier[1]
                 query_values = mo.get_Query_values(csv_sti, parameter_navn_interpret0)
                 to_plot = mo.get_values_to_plot(query_values)

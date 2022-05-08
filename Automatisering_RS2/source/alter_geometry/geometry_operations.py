@@ -119,12 +119,12 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
         _0lines_inside.append([path_of_rs2_file, path_of_csv_file])
         _iternumber_0.append(iterationnumber)
         _excluded_files_2linescalc.append(iterationnumber)
-        _points_to_check.append(None)
+        # _points_to_check.append(None)
     elif any(points is None for points in punkter_indre):
         _1line_inside.append([path_of_rs2_file, path_of_csv_file])
         _excluded_files_2linescalc.append(iterationnumber)
         _iternumber_1.append(iterationnumber)
-        _points_to_check.append(None)
+        # _points_to_check.append(None)
     else:
         _2lines_inside.append([path_of_rs2_file, path_of_csv_file])
         _points_to_check.append(punkter_indre)

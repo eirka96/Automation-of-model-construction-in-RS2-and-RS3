@@ -180,7 +180,7 @@ def execute_plots(list_paths_differences, list_diff_navn, list_path_values, list
         valnavn, (twolines_colname, twolines_inside) in zip(
             mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values,
             list_exluded_files_2linescalc.iteritems(), list_color_map, list_valnavn, list_2lines_inside.iteritems()):
-        if twolines_inside.empty:  # twolines_inside.isnull().values.any()
+        if twolines_inside.empty or twolines_inside.isnull().values.any():
             continue
         parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])

@@ -21,11 +21,13 @@ def klargjore_rs2(df_koordinater_mus, navn_kol, i=0, time=None):
     return i
 
 
-def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer, mappenavn_til_stikategori, list_which_material,
-                _0lines_inside, _1line_inside, _2lines_inside, _excluded_files_2linescalc,
+def alter_model(ytre_grenser_utstrekning, path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer,
+                mappenavn_til_stikategori,
+                list_which_material, _0lines_inside, _1line_inside, _2lines_inside, _excluded_files_2linescalc,
                 _points_to_check, i, j, _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points):
     # endrer materialparametere og geometri for rs2-modelen, basert på filnavnet
-    vinkel = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v'])
+    vinkel = df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['v']
+    vinkel = float(vinkel)
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
     forflytning_x = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['x'])
     if forflytning_x == 1.0:
@@ -35,7 +37,8 @@ def alter_model(path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2fi
     go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
                       list_which_material, _0lines_inside, _1line_inside, _2lines_inside,
                       _excluded_files_2linescalc, i, _points_to_check, path_of_csv_file,
-                      _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points)
+                      _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points,
+                      ytre_grenser_utstrekning=ytre_grenser_utstrekning)
     return
 
 
@@ -122,13 +125,13 @@ def handlinger_kalkulasjon(time=None):
     if time is None:
         time = time_list
     # velge antall filer som skal kalkuleres
-    pag.press('enter', interval=time[2])
-    pag.press('tab', presses=9, interval=time[3])
+    pag.press('enter', interval=time[1])
+    pag.press('tab', presses=9, interval=time[1])
     pag.hotkey('ctrl', 'a', interval=time[2])
-    pag.press('enter', interval=time[3])
+    pag.press('enter', interval=time[1])
     # kjøre kalkulasjon
-    pag.press('tab', presses=2, interval=time[3])
-    pag.press('space', interval=time[3])
+    pag.press('tab', presses=2, interval=time[1])
+    pag.press('space', interval=time[1])
     # sjekke prosessor bruken, så lenge den er over en grense så venter resten av scriptet med å kjøre
     procname = 'feawin.exe'
     bool_proc = check_if_process_running(procname)  # feawin er navnet på .exe-fila til RS2 Compute
@@ -136,7 +139,8 @@ def handlinger_kalkulasjon(time=None):
     while bool_proc:
         pid = get_pid(procname)
         process_compute = psutil.Process(pid)
-        if process_compute.cpu_percent(interval=5) > 5.0:
+        pag.click(962, 255, interval=time[0])
+        if process_compute.cpu_percent(interval=15) > 5.0:
             bool_proc = True
         else:
             bool_proc = False

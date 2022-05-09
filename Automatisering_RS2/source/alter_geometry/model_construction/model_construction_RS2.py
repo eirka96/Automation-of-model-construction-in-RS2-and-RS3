@@ -119,6 +119,15 @@ class InnerBoundary:
                  self.punkter_ytre[indices_points_outer_boundary[0]][0]
         return a_line, b_line
 
+    def get_weakness_lines_sympy(self, element):
+        indices_points_outer_boundary = self.get_indices_outer_boundary(element)
+        p1 = Point(self.punkter_ytre[indices_points_outer_boundary[0]][0],
+                   self.punkter_ytre[indices_points_outer_boundary[0]][1])
+        p2 = Point(self.punkter_ytre[indices_points_outer_boundary[1]][0],
+                   self.punkter_ytre[indices_points_outer_boundary[1]][1])
+        weak_seg = Segment(p1, p2)
+        return weak_seg
+
     def get_tunnel_esc_circle_sympy(self):
         dia = self.diameter
         if isinstance(self.diameter, float):
@@ -726,6 +735,11 @@ class Materials(InnerBoundary):
         return [a, b]
 
     @staticmethod
+    def get_normal_vec_sympy():
+
+        return
+
+    @staticmethod
     def origo_is_between(middlepoint_under, middlepoint_over):
         origo = [0, 0]
         epsilon = 10**-13
@@ -835,6 +849,38 @@ class Materials(InnerBoundary):
             point_over = points_over[0]
         return point_under, point_over
 
+    def checker_ob_exl_innerb_sympy(self, normal):
+        under = 0
+        over = 1
+        pkt_ytre_4 = Point(self.ytre_grenser, -self.ytre_grenser)
+        pkt_ytre_1 = Point(self.ytre_grenser, self.ytre_grenser)
+        pkt_ytre_2 = Point(-self.ytre_grenser, self.ytre_grenser)
+        pkt_ytre_3 = Point(-self.ytre_grenser, -self.ytre_grenser)
+        seg_ob_bunn = Segment(pkt_ytre_4, pkt_ytre_3)
+        seg_ob_topp = Segment(pkt_ytre_1, pkt_ytre_2)
+        seg_ob_hoyr = Segment(pkt_ytre_4, pkt_ytre_1)
+        seg_ob_vens = Segment(pkt_ytre_2, pkt_ytre_3)
+        middlepoint_under = self.get_middle_point(under)
+        middlepoint_over = self.get_middle_point(over)
+        points_under = [self.ytre_grenser, normal[under][0] * self.ytre_grenser + normal[under][1]], [-self.ytre_grenser, normal[under][0] * -self.ytre_grenser + normal[under][1]]
+        points_over = [self.ytre_grenser, normal[over][0] * self.ytre_grenser + normal[over][1]], [-self.ytre_grenser, normal[over][0] * -self.ytre_grenser + normal[over][1]]
+        check_under = [np.sqrt(
+            (points_under[0][0] - middlepoint_under[0]) ** 2 + (points_under[0][1] - middlepoint_under[1]) ** 2),
+            np.sqrt((points_under[1][0] - middlepoint_under[0]) ** 2 + (
+                    points_under[1][1] - middlepoint_under[1]) ** 2)]
+        check_over = [
+            np.sqrt((points_over[0][0] - middlepoint_over[0]) ** 2 + (points_over[0][1] - middlepoint_over[1]) ** 2),
+            np.sqrt((points_over[1][0] - middlepoint_over[0]) ** 2 + (points_over[1][1] - middlepoint_over[1]) ** 2)]
+        check_under, points_under = [list(t) for t in zip(*sorted(zip(check_under, points_under)))]
+        check_over, points_over = [list(t) for t in zip(*sorted(zip(check_over, points_over)))]
+        if check_under[0] < check_over[0]:
+            point_under = points_under[0]
+            point_over = points_over[1]
+        else:
+            point_under = points_under[1]
+            point_over = points_over[0]
+        return point_under, point_over
+
     def checker_ib(self, normal, element):
         middlepoint = self.get_middle_point(element)
         middlepoints = self.get_middle_points()
@@ -866,12 +912,6 @@ class Materials(InnerBoundary):
         p = self.calculate_intersection_ib(points_under[1], normal[under])
         r = self.calculate_intersection_ib(points_over[0], normal[over])
         s = self.calculate_intersection_ib(points_over[1], normal[over])
-        # check_under = [np.sqrt((q[0] - middlepoint_under[0]) ** 2 + (q[1] - middlepoint_under[1]) ** 2),
-        #                np.sqrt((p[0] - middlepoint_under[0]) ** 2 + (p[1] - middlepoint_under[1]) ** 2)]
-        # check_over = [np.sqrt((r[0] - middlepoint_over[0]) ** 2 + (r[1] - middlepoint_over[1]) ** 2),
-        #               np.sqrt((s[0] - middlepoint_over[0]) ** 2 + (s[1] - middlepoint_over[1]) ** 2)]
-        # check_under, points_under = [list(t) for t in zip(*sorted(zip(check_under, points_under)))]
-        # check_over, points_over = [list(t) for t in zip(*sorted(zip(check_over, points_over)))]
         origo = Point(0, 0)
         mid_under = Point(middlepoint_under[0], middlepoint_under[1])
         mid_over = Point(middlepoint_over[0], middlepoint_over[1])

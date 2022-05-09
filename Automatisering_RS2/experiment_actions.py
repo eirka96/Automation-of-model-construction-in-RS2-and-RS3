@@ -27,12 +27,13 @@ def pause_script():
     return
 
 
-def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler,
-                             df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
+def execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+                             df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
                              list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
                              list_points_to_check, sti_list_variables_2lines_calculations,
                              list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points):
-    for i, (navn_rs2, navn_csv) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv)):
+    for i, (navn_rs2, navn_csv, utskrekning) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv,
+                                                              ytre_grenser_utstrekning)):
         list_0lines_inside.append([]), list_1line_inside.append([]), list_2lines_inside.append([]),
         list_excluded_files_2linescalc.append([]), list_points_to_check.append([]),
         list_iternumber_0.append([]), list_iternumber_1.append([]), list_iternumber_2.append([]),
@@ -44,8 +45,8 @@ def execute_model_alteration(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2f
             print(path_fil_csv)
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
-                Auto.alter_model(path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer, mappenavn_til_rs2,
-                                 list_which_material, list_0lines_inside[i], list_1line_inside[i],
+                Auto.alter_model(utskrekning, path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer,
+                                 mappenavn_til_rs2, list_which_material, list_0lines_inside[i], list_1line_inside[i],
                                  list_2lines_inside[i], list_excluded_files_2linescalc[i],
                                  list_points_to_check[i], i, j, list_iternumber_0[i], list_iternumber_1[i],
                                  list_iternumber_2[i], ll_inner_points[i])

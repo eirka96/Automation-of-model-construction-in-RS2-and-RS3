@@ -41,7 +41,7 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     y_bunn = -mektighet_sone / 2
 
     # definerer svakhetssonen basert på de ytre grensebetingelsene:
-
+    vinkel_sone = mc.prepare_angel(vinkel_sone)
     if vinkel_sone != 0:
         theta = np.deg2rad(vinkel_sone)
         matr = np.array([[np.cos(theta), -np.sin(theta), forflytning_x_sone], [np.sin(theta), np.cos(theta), forflytning_y_sone]])

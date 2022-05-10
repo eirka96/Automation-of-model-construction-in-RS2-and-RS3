@@ -52,7 +52,7 @@ if command == 'j':
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
-    y_attributes, x_attributes = 80, 1, 1, 100, 2, 22, [-80, -78, 1], 0
+    y_attributes, x_attributes = 80, 1, 1, 200, 1, 5, 0, [0, 11, 2]
     ytre_grenser_utstrekning = [25, 100, 150, 150, 150, 150, 150]
     overdekninger = [25, 100, 200, 300, 500, 800, 1200]
     # definerer en liste over alle attributter (attributes_list, samt en liste over de attributter som skal varieres
@@ -80,7 +80,7 @@ if command == 'j':
                'quad_low - totaldeformasjon, inbetween']
     list_valnavn = []
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperiment7\base_modeler'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperiment8\base_modeler'
                                                              r'\Pycharm_automatisering'
                                                              r'\liste_stier_PycharmProjects_automatisering.txt ',
                                                              sep=';')

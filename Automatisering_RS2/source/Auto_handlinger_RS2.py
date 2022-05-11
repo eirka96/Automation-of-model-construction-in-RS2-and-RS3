@@ -21,7 +21,8 @@ def klargjore_rs2(df_koordinater_mus, navn_kol, i=0, time=None):
     return i
 
 
-def alter_model(ytre_grenser_utstrekning, path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer,
+def alter_model(ytre_grenser_utstrekning, n_points_tunnel_boundary,
+                path_of_rs2_file, path_of_csv_file, df_endrede_attributter_rs2filer,
                 mappenavn_til_stikategori, list_which_material, _0lines_inside, _1line_inside, _2lines_inside,
                 _excluded_files_2linescalc, _points_to_check, i, j, _iternumber_0, _iternumber_1, _iternumber_2,
                 l_inner_points):
@@ -30,15 +31,16 @@ def alter_model(ytre_grenser_utstrekning, path_of_rs2_file, path_of_csv_file, df
     vinkel = float(vinkel)
     forflytning_y = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['y'])
     forflytning_x = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['x'])
-    if forflytning_x == 1.0:
-        forflytning_x = 0.99
+    # if forflytning_x == 1.0:
+    #     forflytning_x = 0.99
     mektighet = float(df_endrede_attributter_rs2filer[mappenavn_til_stikategori[i]][j]['m'])
     # print(vinkel), print(forflytning_y), print(forflytning_x), print(mektighet), print(mappenavn_til_stikategori)
     go.alter_geometry(vinkel, forflytning_x, forflytning_y, mektighet, path_of_rs2_file,
                       list_which_material, _0lines_inside, _1line_inside, _2lines_inside,
                       _excluded_files_2linescalc, i, _points_to_check, path_of_csv_file,
                       _iternumber_0, _iternumber_1, _iternumber_2, l_inner_points,
-                      ytre_grenser_utstrekning=ytre_grenser_utstrekning)
+                      ytre_grenser_utstrekning=ytre_grenser_utstrekning,
+                      n_points_tunnel_boundary=n_points_tunnel_boundary)
     return
 
 

@@ -64,8 +64,8 @@ def which_overburden(element):
         return 'ob_500'
     elif element == 800:
         return 'ob_800'
-    elif element == 1000:
-        return 'ob_1000'
+    elif element == 1200:
+        return 'ob_1200'
     else:
         return None
 
@@ -78,7 +78,7 @@ def get_ob_index(element):
         'ob_300': 3,
         'ob_500': 4,
         'ob_800': 5,
-        'ob_1000': 6,
+        'ob_1200': 6,
     }
     return switcher.get(which_overburden(element), None)
 

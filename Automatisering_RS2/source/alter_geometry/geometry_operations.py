@@ -28,10 +28,10 @@ def alter_geometry(vinkel_sone, forflytning_x_sone, forflytning_y_sone, mektighe
     # making list of points stored as float:
     points_tunnel_boundary = mc.prep_points_tunnel_boundary(points_tunnel_boundary0, data, index_boundary1)
     # definerer hvilke punkter i tunnel_boundary som tilhører hvilken matematiske kvadrant.
-    fourth_quad = points_tunnel_boundary[0:90]
-    first_quad = points_tunnel_boundary[90:180]
-    second_quad = points_tunnel_boundary[180:270]
-    third_quad = points_tunnel_boundary[270:359]
+    fourth_quad = points_tunnel_boundary[0:int(n_points_tunnel_boundary/4)]
+    first_quad = points_tunnel_boundary[int(n_points_tunnel_boundary/4):int(n_points_tunnel_boundary/2)]
+    second_quad = points_tunnel_boundary[int(n_points_tunnel_boundary/2):int(n_points_tunnel_boundary*(3/4))]
+    third_quad = points_tunnel_boundary[int(n_points_tunnel_boundary*(3/4)):n_points_tunnel_boundary]
     quad = (fourth_quad, first_quad, second_quad, third_quad)
 
     # mektighet, legges til før forflytning og rotasjon, og endrer kun y-verdi siden sonen i utgangspunktet er horisontal

@@ -52,9 +52,10 @@ if command == 'j':
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
-    y_attributes, x_attributes = 80, 1, 1, 200, 1, 5, 0, [0, 11, 2]
+    y_attributes, x_attributes = 80, 1, 1, [500], 1, 5, 0, [0, 3, 2]
     ytre_grenser_utstrekning = [25, 100, 150, 150, 150, 150, 150]
     overdekninger = [25, 100, 200, 300, 500, 800, 1200]
+    n_points_tunnel_boundary = 92
     # definerer en liste over alle attributter (attributes_list, samt en liste over de attributter som skal varieres
     # (list_of_lists_attributes). Brukes i plotte_funksjonene.
     attributes_list = [rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes,
@@ -80,7 +81,8 @@ if command == 'j':
                'quad_low - totaldeformasjon, inbetween']
     list_valnavn = []
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperiment8\base_modeler'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperimentTestPunkter'
+                                                             r'\base_modeler'
                                                              r'\Pycharm_automatisering'
                                                              r'\liste_stier_PycharmProjects_automatisering.txt ',
                                                              sep=';')
@@ -185,7 +187,8 @@ if command == 'j':
     time = [0, 0.7, 1, 2, 5]
     """her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"""
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-        ea.execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+        ea.execute_model_alteration(ytre_grenser_utstrekning, n_points_tunnel_boundary,
+                                    mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
                                     df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
                                     list_0lines_inside, list_1line_inside, list_2lines_inside,
                                     list_excluded_files_2linescalc, list_points_to_check,

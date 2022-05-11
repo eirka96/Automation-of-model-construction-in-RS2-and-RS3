@@ -27,7 +27,8 @@ def pause_script():
     return
 
 
-def execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+def execute_model_alteration(ytre_grenser_utstrekning, n_points_tunnel_boundary,
+                             mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
                              df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material, list_0lines_inside,
                              list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
                              list_points_to_check, sti_list_variables_2lines_calculations,
@@ -45,7 +46,8 @@ def execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappen
             # print(path_fil_csv)
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
-                Auto.alter_model(utskrekning, path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer,
+                Auto.alter_model(utskrekning, n_points_tunnel_boundary,
+                                 path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer,
                                  mappenavn_til_rs2, list_which_material, list_0lines_inside[i], list_1line_inside[i],
                                  list_2lines_inside[i], list_excluded_files_2linescalc[i],
                                  list_points_to_check[i], i, j, list_iternumber_0[i], list_iternumber_1[i],

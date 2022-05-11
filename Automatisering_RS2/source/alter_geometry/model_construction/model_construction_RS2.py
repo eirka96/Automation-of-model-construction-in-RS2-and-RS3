@@ -265,9 +265,9 @@ class InnerBoundary:
     def get_start_quad(self, punkt):
         switcher = {
             '4th quad': 0,
-            '1st quad': 90,
-            '2nd quad': 180,
-            '3rd quad': 270,
+            '1st quad': int(self.n_points_ib/4),
+            '2nd quad': int(self.n_points_ib/2),
+            '3rd quad': int(self.n_points_ib*(3/4)),
         }
         return switcher.get(self.which_quad(punkt), None)
 
@@ -678,7 +678,8 @@ class Materials(InnerBoundary):
         list0 = [[self.punkter_ytre[0], self.punkter_ytre[3], ytre_punkt_under],
                  [self.punkter_ytre[1], self.punkter_ytre[2], ytre_punkt_over],
                  [self.punkter_ytre[3], self.punkter_ytre[2], self.punkter_ytre[1]],
-                 [self.points_tunnel_boundary[0], self.points_tunnel_boundary[180], self.points_tunnel_boundary[270]]]
+                 [self.points_tunnel_boundary[0], self.points_tunnel_boundary[int(self.n_points_ib/2)],
+                  self.points_tunnel_boundary[int(self.n_points_ib*(3/4))]]]
         if self.forflytning_x_sone == 0 and self.forflytning_y_sone == 0:
             list1 = list_material[0]
         else:

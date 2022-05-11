@@ -191,7 +191,7 @@ def make_file_name(parameter_verdier_csv, geometri='S'):
     df_verdier = pd.read_csv(parameter_verdier_csv, sep=';')
     parameter_navn = df_verdier.columns.values.tolist()
     file_name_rs2_list = []
-    file_name_excel_list = []
+    file_name_csv_list = []
     for i in range((df_verdier.shape[0])):
         path = ''
         path += (geometri + "_")
@@ -202,8 +202,8 @@ def make_file_name(parameter_verdier_csv, geometri='S'):
         path += '.fea'  # denne er eneste forskjellen mellom make_folder_name og make_file_name
         path1 += '.csv'
         file_name_rs2_list.append(path)
-        file_name_excel_list.append(path1)
-    return file_name_rs2_list, file_name_excel_list
+        file_name_csv_list.append(path1)
+    return file_name_rs2_list, file_name_csv_list
 
 
 """beskrivelsen for denne er identisk med den over bare at denne er tilpasset for mappenavn
@@ -1022,3 +1022,24 @@ def clean_alt_list(list_):
     list_ = list_.replace('[', '["')
     list_ = list_.replace(']', '"]')
     return list_
+
+
+def get_files_unsuc_tolerance(path_arbeidsfiler, list_navn_modell, path_store_unsuc_tol_models, tolerance):
+    path_arbeidsfiler = alternate_slash([path_arbeidsfiler])[0]
+    file_suffix = '.log'
+    list_unsucsesful_tolerance = []
+    subs_tol = 'Tolerance:'
+    for navn in list_navn_modell:
+        navn = navn.replace('.fea', '')
+        check_path = path_arbeidsfiler+'/'+navn+file_suffix
+        with open(check_path, 'r') as file:
+            data = file.readlines()
+        list_tol = [line for line in data if subs_tol in line]
+        list_tol = [re.findall(r"[-+]?(?:\d*\.\d+[Ee]?[+-]?\d*\b(?!:))", line)[0] for line in list_tol]
+        list_tol = [float(tol) for tol in list_tol if float(tol) > tolerance]
+        if list_tol:
+            list_unsucsesful_tolerance.append(check_path)
+
+    with open(path_store_unsuc_tol_models, 'w') as file:  #evt df to csv???
+        file.writelines([f"{var1}\n" for var1 in list_unsucsesful_tolerance])
+    return

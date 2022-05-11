@@ -130,8 +130,8 @@ def handlinger_kalkulasjon(time=None):
     pag.hotkey('ctrl', 'a', interval=time[2])
     pag.press('enter', interval=time[1])
     # kjøre kalkulasjon
-    pag.press('tab', presses=2, interval=time[1])
-    pag.press('space', interval=time[1])
+    pag.press('tab', presses=2, interval=time[2])
+    pag.press('space', interval=time[2])
     # sjekke prosessor bruken, så lenge den er over en grense så venter resten av scriptet med å kjøre
     procname = 'feawin.exe'
     bool_proc = check_if_process_running(procname)  # feawin er navnet på .exe-fila til RS2 Compute

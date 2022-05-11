@@ -24,17 +24,17 @@ def get_range_changing_attributes(rock_mass_material, weakness_zone_material, st
     iter_list = [rock_mass_material, weakness_zone_material, stress_ratio,
                  mektighet_attributes, angel_attributes, y_attributes, x_attributes]
     for idx, iter_object in enumerate(iter_list):
-        if not isinstance(iter_object, (list, float, int, tuple)) or (isinstance(iter_object, (list, tuple)) and
-                                                                      len(iter_object) != 3):
+        if not isinstance(iter_object, (list, float, int, tuple, str)) or (isinstance(iter_object, (list, tuple)) and
+                                                                           len(iter_object) != 3):
             print(
                 "Advarsel!!!!! Input må være enten type int, float, list eller tupple. Dessuten må list eller tuple ha "
                 "lengde 3 og være på formen [start_element, slutt_element, steg for element]")
             exit()
-        elif isinstance(iter_object, (int, float)):
+        elif isinstance(iter_object, (int, float, str)):
             iter_list[idx] = [iter_object]
         else:
             iter_list[idx] = np.arange(iter_object[0], iter_object[1], iter_object[2]).tolist()
-    iter_list.insert(3, [overburden])
+    iter_list.insert(3, overburden)
     return iter_list[0], iter_list[1], iter_list[2], iter_list[3], iter_list[4], iter_list[5], iter_list[6], iter_list[7]
 
 
@@ -44,7 +44,7 @@ def get_shape_matrix(rock_mass_material, weakness_zone_material, stress_ratio, o
                  mektighet_attributes, angel_attributes, y_attributes, x_attributes]
     shape_matrix_list = []
     for iter_object in iter_list:
-        if isinstance(iter_object, (int, float)):
+        if isinstance(iter_object, (int, float, str)):
             shape_matrix_list.append(1)
         else:
             shape_matrix_list.append(len(iter_object))

@@ -42,7 +42,7 @@ def execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappen
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
             print(path_fil_rs2)
-            print(path_fil_csv)
+            # print(path_fil_csv)
             if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
                 streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
                 Auto.alter_model(utskrekning, path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer,

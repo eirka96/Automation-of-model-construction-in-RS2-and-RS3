@@ -905,8 +905,8 @@ class Materials(InnerBoundary):
         normal_seg_under = self.get_normal_line_sympy(middlepoint_under, weak_seg_under)
         normal_seg_over = self.get_normal_line_sympy(middlepoint_over, weak_seg_over)
         self.get_intersections_ob_sympy(list_check, normal_seg_under, normal_seg_over, list_p_under, list_p_over)
-        point_under = self.get_nearest_intersection_under_sympy(list_p_under, middlepoint_under)
-        point_over = self.get_nearest_intersection_over_sympy(list_p_over, middlepoint_over)
+        point_under = list(self.get_nearest_intersection_under_sympy(list_p_under, middlepoint_under))
+        point_over = list(self.get_nearest_intersection_over_sympy(list_p_over, middlepoint_over, middlepoint_under))
         return point_under, point_over
 
     def get_intersections_ob_sympy(self, list_check, normal_seg_under, normal_seg_over, list_p_under, list_p_over):
@@ -921,8 +921,8 @@ class Materials(InnerBoundary):
             list_p_over.append([Point(-list_p_over[0][0][0],
                                       -list_p_over[0][0][1], evaluate=False)])
         if len(list_p_under) == 1:
-            list_p_over.append([Point(-list_p_under[0][0][0],
-                                      -list_p_under[0][0][1], evaluate=False)])
+            list_p_under.append([Point(-list_p_under[0][0][0],
+                                       -list_p_under[0][0][1], evaluate=False)])
         return
 
     def get_nearest_intersection_under_sympy(self, list_intersection_points, midpoint):
@@ -955,13 +955,13 @@ class Materials(InnerBoundary):
                 point = list_intersection_points[0][0]
         return point
 
-    def get_nearest_intersection_over_sympy(self, list_intersection_points, midpoint):
+    def get_nearest_intersection_over_sympy(self, list_intersection_points, midpoint_over, midpoint_under):
         if (self.forflytning_x_sone == 0 and self.forflytning_y_sone == 0) and \
                 (self.vinkel == 45 or self.vinkel == 225 or self.vinkel == -135 or self.vinkel == -315):
             p1 = Point(-self.ytre_grenser, self.ytre_grenser)
             p2 = Point(self.ytre_grenser, -self.ytre_grenser)
-            seg1 = Segment(p1, midpoint)
-            seg2 = Segment(p2, midpoint)
+            seg1 = Segment(p1, midpoint_over)
+            seg2 = Segment(p2, midpoint_over)
             if seg1.length > seg2.length:
                 point = p1
             else:
@@ -970,15 +970,22 @@ class Materials(InnerBoundary):
                 (self.vinkel == -45 or self.vinkel == -225 or self.vinkel == 135 or self.vinkel == 315):
             p1 = Point(self.ytre_grenser, self.ytre_grenser)
             p2 = Point(-self.ytre_grenser, -self.ytre_grenser)
-            seg1 = Segment(p1, midpoint)
-            seg2 = Segment(p2, midpoint)
+            seg1 = Segment(p1, midpoint_over)
+            seg2 = Segment(p2, midpoint_over)
             if seg1.length > seg2.length:
                 point = p2
             else:
                 point = p1
+        elif Segment(midpoint_under, midpoint_over).contains(Point(0, 0)):
+            seg1 = Segment(list_intersection_points[0][0], midpoint_over)
+            seg2 = Segment(list_intersection_points[1][0], midpoint_over)
+            if seg1.length > seg2.length:
+                point = list_intersection_points[1][0]
+            else:
+                point = list_intersection_points[0][0]
         else:
-            seg1 = Segment(list_intersection_points[0][0], midpoint)
-            seg2 = Segment(list_intersection_points[1][0], midpoint)
+            seg1 = Segment(list_intersection_points[0][0], midpoint_over)
+            seg2 = Segment(list_intersection_points[1][0], midpoint_over)
             if seg1.length > seg2.length:
                 point = list_intersection_points[0][0]
             else:

@@ -76,7 +76,7 @@ def set_model_attributes(path_csv_attributes, rock_mass_material, weakness_zone_
 
 
 def get_file_paths_batch(paths_shale_rs2, path_csv):
-    l = [25, 100, 200, 300, 500, 800, 1000]
+    l = [25, 100, 200, 300, 500, 800, 1200]
     sti_kildefil_rs2 = []
     sti_kildefil_csv = []
     for i in l:
@@ -279,6 +279,7 @@ liste som inneholder navnene til alle mapper som er relevante for lagring av de 
 
 returnerer:
 list_folders"""
+
 
 def get_name_folders(path_storage_files):
     path_storage_files = alternate_slash([path_storage_files])[0]

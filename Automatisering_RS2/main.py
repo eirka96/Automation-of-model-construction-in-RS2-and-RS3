@@ -199,13 +199,6 @@ if command == 'j':
     #                                 list_excluded_files_2linescalc, list_points_to_check,
     #                                 sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
     #                                 list_iternumber_2, ll_inner_points)
-    # list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-    #     ea.execute_model_alteration(ytre_grenser_utstrekning, mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
-    #                                 df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
-    #                                 list_0lines_inside, list_1line_inside, list_2lines_inside,
-    #                                 list_excluded_files_2linescalc, list_points_to_check,
-    #                                 sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
-    #                                 list_iternumber_2, ll_inner_points)
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
         go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
     list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc, list_points_to_check, \
@@ -223,20 +216,20 @@ if command == 'j':
     """
     # ea.calculate(path_rs2_compute, time, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, sti_tolerance_too_high,
     #              tolerance)
-    mo.get_files_unsuc_tolerance(sti_til_mappe_for_arbeidsfiler, df_filnavn_rs2, sti_tolerance_too_high, tolerance)
+    # mo.get_files_unsuc_tolerance(sti_til_mappe_for_arbeidsfiler, df_filnavn_rs2, sti_tolerance_too_high, tolerance)
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
     # ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
     #               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
     #               list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
-    # list_paths_differences, list_diff_navn, list_paths_values = \
-    #     ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
-    #                                df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
-    #                                list_excluded_files_2linescalc, list_valnavn, list_2lines_inside)
+    list_paths_differences, list_diff_navn, list_paths_values = \
+        ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
+                                   df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
+                                   list_excluded_files_2linescalc, list_valnavn, list_2lines_inside)
 
     """her plottes det som skal plottes"""
-    # ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_valnavn,
-    #                  mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-    #                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_excluded_files_2linescalc,
-    #                  list_colormaps, list_2lines_inside)
+    ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_valnavn,
+                     mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
+                     list_of_lists_attributes, attribute_type, fysiske_enheter, list_excluded_files_2linescalc,
+                     list_colormaps, list_2lines_inside)

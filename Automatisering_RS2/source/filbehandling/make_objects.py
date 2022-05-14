@@ -780,7 +780,7 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
     differanse_navn.pop(0)
     for par_navn, path, enhet in zip(parameter_navn, paths, fysiske_enheter):
         df = get_df_differences_from_csv(path)
-        for category, indices, type0 in zip(list_category, list_indices, attribute_type):
+        for k, (category, indices, type0) in enumerate(zip(list_category, list_indices, attribute_type)):
             df['category'] = category
             df['indices_true'] = indices
             groups = df.groupby('category')
@@ -822,6 +822,7 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
                 # plt.legend()
                 # plt.legend()
             plt.show()
+            plt.savefig("difference_selection{}.png".format(k))
     return
 
 
@@ -1035,7 +1036,11 @@ def get_files_unsuc_tolerance(path_arbeidsfiler, list_navn_modell, path_store_un
         with open(check_path, 'r') as file:
             data = file.readlines()
         list_tol = [line for line in data if subs_tol in line]
-        list_tol = [re.findall(r"[-+]?(?:\d*\.\d+[Ee]?[+-]?\d*\b(?!:))", line)[0] for line in list_tol]
+        plist = []
+        for line in list_tol:
+            p = re.findall(r"[-+]?(?:\d*\.\d+[Ee]?[+-]?\d*\b(?!:))", line)[0]
+            plist.append(p)
+        list_tol = plist.copy()
         list_tol = [float(tol) for tol in list_tol if float(tol) > tolerance]
         if list_tol:
             list_unsucsesful_tolerance.append(check_path)

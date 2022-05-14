@@ -1038,7 +1038,7 @@ def get_files_unsuc_tolerance(path_arbeidsfiler, list_navn_modell, path_store_un
         list_tol = [line for line in data if subs_tol in line]
         plist = []
         for line in list_tol:
-            p = re.findall(r"[-+]?(?:\d*\.\d+[Ee]?[+-]?\d*\b(?!:))", line)[0]
+            p = re.findall(r"([-+]?(?:\d*\.\d+[Ee]?[+-]?\d*\b(?!:))|[-+]?(?:\d*[Ee]?[+-]?\d*\b(?!:)))", line)[1]
             plist.append(p)
         list_tol = plist.copy()
         list_tol = [float(tol) for tol in list_tol if float(tol) > tolerance]

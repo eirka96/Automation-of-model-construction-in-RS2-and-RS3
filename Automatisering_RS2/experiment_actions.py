@@ -2,6 +2,8 @@ import psutil
 import pyautogui as pag
 import pandas as pd
 import numpy as np
+import shutil as st
+import re
 
 from os import path
 from os import mkdir
@@ -54,6 +56,91 @@ def execute_model_alteration(ytre_grenser_utstrekning, n_points_tunnel_boundary,
                                  list_iternumber_2[i], ll_inner_points[i])
             else:
                 ll_inner_points[i].append(None)
+    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
+        mo.create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside,
+                                  list_excluded_files_2linescalc, list_points_to_check,
+                                  sti_list_variables_2lines_calculations, mappenavn_til_rs2,
+                                  list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points)
+    return list_of_df_2lines_info, colnames_of_dfs_2lines_info
+
+
+def execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary, overdekninger, list_change_fieldstress,
+                              mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+                              df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
+                              list_0lines_inside,
+                              list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc,
+                              list_points_to_check, sti_list_variables_2lines_calculations,
+                              list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points):
+    q = 0
+    for i, (navn_rs2, navn_csv, utskrekning, overdekning) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv,
+                                                                           ytre_grenser_utstrekning, overdekninger)):
+        list_0lines_inside.append([]), list_1line_inside.append([]), list_2lines_inside.append([]),
+        list_excluded_files_2linescalc.append([]), list_points_to_check.append([]),
+        list_iternumber_0.append([]), list_iternumber_1.append([]), list_iternumber_2.append([]),
+        ll_inner_points.append([])
+        p = 2
+        if utskrekning == ytre_grenser_utstrekning[i-1]:
+            q += 1
+            overburden = list_change_fieldstress[q-1]
+            if q == 1:
+                while True:
+                    try:
+                        command = input('ferdig å undersøke filer?')
+                        if command == 'j':
+                            break
+                        else:
+                            print('j for ja din nisse!')
+                    except NameError:
+                        print('implementert verdi ukjent')
+                        continue
+
+            list_0lines_inside[i], list_1line_inside[i], list_2lines_inside[i], list_excluded_files_2linescalc[i], \
+                list_points_to_check[i], list_iternumber_0[i], list_iternumber_1[i], list_iternumber_2[i], \
+                ll_inner_points[i] = \
+                list_0lines_inside[p], list_1line_inside[p], list_2lines_inside[p], list_excluded_files_2linescalc[p], \
+                list_points_to_check[p], list_iternumber_0[p], list_iternumber_1[p], list_iternumber_2[p], \
+                ll_inner_points[p]
+            list_0lines_inside[i] = [[paths[0].replace('od200', 'od{}'.format(overdekning)),
+                                      paths[1].replace('od200', 'od{}'.format(overdekning))]
+                                     for paths in list_0lines_inside[i]]
+            list_1line_inside[i] = [[paths[0].replace('od200', 'od{}'.format(overdekning)),
+                                     paths[1].replace('od200', 'od{}'.format(overdekning))]
+                                    for paths in list_1line_inside[i]]
+            list_2lines_inside[i] = [[paths[0].replace('od200', 'od{}'.format(overdekning)),
+                                      paths[1].replace('od200', 'od{}'.format(overdekning))]
+                                     for paths in list_2lines_inside[i]]
+            for j in range(df_stier_rs2filer.shape[0]):
+                path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+                if isinstance(path_fil_rs2, str):
+                    path_to_copy_rs2 = df_stier_rs2filer['S_bm80_ss1_k1_od200/rs2/'][j]
+                    st.copyfile(path_to_copy_rs2, path_fil_rs2)
+            key_word = 'field stress:\n'
+            for j in range(df_stier_rs2filer.shape[0]):
+                path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+                if isinstance(path_fil_rs2, str):
+                    with open(path_fil_rs2, 'r') as file:
+                        data = file.readlines()
+                        index_fieldstress = data.index(key_word) + 1
+                        data[index_fieldstress] = re.sub(r'^(\s*(?:\S+\s+){5})\S+', r'\1 '+str('{}'.format(overburden)),
+                                                         data[index_fieldstress])
+                    with open(path_fil_rs2, 'w') as file:
+                        file.writelines(data)
+        else:
+            for j in range(df_stier_rs2filer.shape[0]):
+                path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
+                path_fil_csv = df_stier_csvfiler[navn_csv][j]
+                print(path_fil_rs2)
+                # print(path_fil_csv)
+                if isinstance(path_fil_rs2, str) and isinstance(path_fil_csv, str):
+                    streng_endringer = df_endrede_attributter_rs2filer[navn_rs2][j]
+                    Auto.alter_model(utskrekning, n_points_tunnel_boundary,
+                                     path_fil_rs2, path_fil_csv, df_endrede_attributter_rs2filer,
+                                     mappenavn_til_rs2, list_which_material, list_0lines_inside[i], list_1line_inside[i],
+                                     list_2lines_inside[i], list_excluded_files_2linescalc[i],
+                                     list_points_to_check[i], i, j, list_iternumber_0[i], list_iternumber_1[i],
+                                     list_iternumber_2[i], ll_inner_points[i])
+                else:
+                    ll_inner_points[i].append(None)
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
         mo.create_csv_2lines_info(list_0lines_inside, list_1line_inside, list_2lines_inside,
                                   list_excluded_files_2linescalc, list_points_to_check,

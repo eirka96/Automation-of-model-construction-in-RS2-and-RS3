@@ -49,7 +49,7 @@ if command == 'j':
     # definerer hvilke attributter som endres
     tolerance = 0.001
     maxiter = 2000
-    fieldstress = [[300, 500, 800, 1200], 2.7, 1, 1]
+    list_change_fieldstress = [300, 500, 800, 1200]
     ant_parametere_interpret = 2
     parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
     fysiske_enheter = ['[MPa]', '[m]']
@@ -73,7 +73,7 @@ if command == 'j':
     list_colormaps = []
     list_colormaps += 7 * [color_map]
     list_which_material = [[[[15, 15], [15, 15], [16, 16], [16, 0]], [[15, 15], [15, 15], [16, 16], [15, 0]]],
-                           [[15, 15], [15, 15], [16, 0], [15, 0], [16, 16]],
+                           [[15, 15], [15, 15], [15, 0], [16, 0], [16, 16]],
                            [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]]
 
     valnavn = ['file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high', 'quad_high - sigma 1, inbetween',

@@ -1089,3 +1089,9 @@ def get_files_unsuc_tolerance(path_arbeidsfiler, list_navn_modell, path_store_un
     with open(path_store_unsuc_tol_models, 'w') as file:  #evt df to csv???
         file.writelines([f"{var1}\n" for var1 in list_unsucsesful_tolerance])
     return
+
+
+def get_x_distance(normalized_distance_list, zone_angle):
+    zone_angle = np.deg2rad(zone_angle)
+    x_distance_list = [round(norm_dist/np.sin(zone_angle), 2) for norm_dist in normalized_distance_list]
+    return x_distance_list

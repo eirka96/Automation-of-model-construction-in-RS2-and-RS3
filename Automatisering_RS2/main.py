@@ -55,7 +55,10 @@ if command == 'j':
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
-    y_attributes, x_attributes = 80, 1, 1, [100, 200, 300, 500, 800, 1200], 1, [45, 90, 7.5], 0, [0, 21, 3]
+    y_attributes, x_attributes = 80, 1, 1, [100, 200, 300, 500, 800, 1200], 1, [45, 91, 7.5], 0, [0, 12, 1]
+    #NB!!!!!! x_attributes er her missvisende, men er valgt å forbli slik pga liten tid. Det er funnet ut at det
+    # er mer hensiktsmessig å nytte minste avstand fra sone til tunnelsenter. y blir altså ikke brukt og x er egt
+    # denne nye normerte avstand, som i ea.set_model_csv_attributes_batch blir endret til rett x-verdi.
     ytre_grenser_utstrekning = [25, 100, 150, 150, 150, 150, 150]
     overdekninger = [25, 100, 200, 300, 500, 800, 1200]
     n_points_tunnel_boundary = 360

@@ -2,6 +2,7 @@ import numpy as np
 import itertools
 from csv import writer
 from sys import exit
+import Automatisering_RS2.source.filbehandling.make_objects as mo
 
 
 def delete_content_csv(csv_paths):
@@ -118,10 +119,11 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
         list_data = [['bm', 'ss', 'k', 'od', 'm', 'v', 'y', 'x']]
         for idx in itertools.product(*[range(s) for s in shape_matrix_list]):
             rmm_i, wzm_i, sr_i, ob_i, m_i, v_i, y_i, x_i = idx
+            x_true = mo.get_x_distance(normalized_distance_list=x.copy(), zone_angle=v[v_i])
             list_data.append(['{}'.format(rmm[rmm_i]), '{}'.format(wzm[wzm_i]),
                               '{}'.format(sr[sr_i]), '{}'.format(ob[ob_i]),
                               '{}'.format(m[m_i]), '{}'.format(v[v_i]),
-                              '{}'.format(y[y_i]), '{}'.format(x[x_i])])
+                              '{}'.format(y[y_i]), '{}'.format(x_true[x_i])])
         writer_object.writerows(list_data)
         file.close()
     return

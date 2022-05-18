@@ -1095,3 +1095,12 @@ def get_x_distance(normalized_distance_list, zone_angle):
     zone_angle = np.deg2rad(zone_angle)
     x_distance_list = [round(norm_dist/np.sin(zone_angle), 2) for norm_dist in normalized_distance_list]
     return x_distance_list
+
+
+def create_csv_files(sti_arbeidsfiler, parameter_verdier_csv):
+    sti_arbeidsfiler = alternate_slash([sti_arbeidsfiler])[0]
+    fname_list = make_file_name(parameter_verdier_csv)
+    for fname in fname_list[1]:
+        with open(sti_arbeidsfiler + fname, 'w') as my_new_csv_file:
+            pass
+    return

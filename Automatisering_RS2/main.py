@@ -178,7 +178,7 @@ if command == 'j':
     # her stilles spm om det vil startes et nytt eksperiment, hvis ja så blir det dannet nye filer og de gamle forkastes
     # change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
     #                              sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier,
-    #                              path_csv_parameter_verdier_mappe)
+    #                              path_csv_parameter_verdier_mappe, ytre_grenser_utstrekning)
     # if change[0]:
     #     df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
 
@@ -195,13 +195,14 @@ if command == 'j':
     time = [0, 0.7, 1, 2, 5]
     """her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"""
     # list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-    #     ea.execute_model_alteration(ytre_grenser_utstrekning, n_points_tunnel_boundary,
-    #                                 mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
-    #                                 df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
-    #                                 list_0lines_inside, list_1line_inside, list_2lines_inside,
-    #                                 list_excluded_files_2linescalc, list_points_to_check,
-    #                                 sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
-    #                                 list_iternumber_2, ll_inner_points)
+    #     ea.execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary, overdekninger,
+    #                                  list_change_fieldstress,
+    #                                  mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+    #                                  df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
+    #                                  list_0lines_inside, list_1line_inside, list_2lines_inside,
+    #                                  list_excluded_files_2linescalc, list_points_to_check,
+    #                                  sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
+    #                                  list_iternumber_2, ll_inner_points)
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
         go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
     list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc, list_points_to_check, \

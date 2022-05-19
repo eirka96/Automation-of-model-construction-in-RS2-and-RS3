@@ -1104,3 +1104,13 @@ def create_csv_files(sti_arbeidsfiler, parameter_verdier_csv):
         with open(sti_arbeidsfiler + fname, 'w') as my_new_csv_file:
             pass
     return
+
+
+def open_csv_files(sti_exe, sti_csv_stier):
+    from subprocess import Popen
+    with open(sti_csv_stier, 'r') as file:
+        liste_csv_stier = file.readlines()
+    for csv_sti in liste_csv_stier:
+        Popen([sti_exe, csv_sti.replace('\n', ' ')])
+    return
+

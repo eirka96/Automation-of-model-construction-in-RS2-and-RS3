@@ -227,16 +227,17 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
 
 def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
                             df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
-                            list_excluded_files_2linescalc, list_valnavn, list_2lines_inside):
+                            list_excluded_files_2linescalc, list_valnavn, list_2lines_inside, sti_values_toplot):
     list_differences = mo.make_container_diff(mappenavn_til_rs2)
     list_values = mo.make_container_diff(mappenavn_til_rs2)
     parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
     list_paths_differences = []
     list_diff_navn = []
     list_path_values = []
-    for k, (navn_rs2, navn_csv, excluded_files, (twolines_colname, twolines_inside), (points_check_colname, points_to_check), valnavn) in \
-            enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv, list_excluded_files_2linescalc, list_2lines_inside.iteritems(),
-                          list_points_to_check.iteritems(), list_valnavn)):
+    for k, (navn_rs2, navn_csv, excluded_files, (twolines_colname, twolines_inside), (points_check_colname,
+                                                                                      points_to_check), valnavn) in \
+            enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv, list_excluded_files_2linescalc,
+                          list_2lines_inside.iteritems(), list_points_to_check.iteritems(), list_valnavn)):
         # element_files_corrupted er definert mtp en treshold for filstørrelse, da de filer hvor feilklikking inntreffer
         # viser ca 1/3 mindre størrelse.
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
@@ -273,7 +274,7 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
             list_diff_navn[k] = diff_navn
             path_value = mo.create_values_csv(navn_csv, list_values[k], parameter_navn_interpret, paths_fil_csv,
                                               elements_files_corrupted, 'values', sti_til_mapper_endelige_filer, valnavn,
-                                              twolines_inside)
+                                              twolines_inside, sti_values_toplot)
             list_path_values[k] = path_value
     return list_paths_differences, list_diff_navn, list_path_values
 

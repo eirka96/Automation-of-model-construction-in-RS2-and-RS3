@@ -69,6 +69,8 @@ if command == 'j':
     list_of_lists_attributes, attribute_type = mo.return_lists(attributes_list)
 
     color_map = {
+        'od': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'fuchsia'],
+        'v': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'fuchsia'],
         'm': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'fuchsia'],
         'x': ['black', 'gray', 'lightcoral', 'red', 'orange', 'yellow', 'xkcd:yellowish', 'green',
               'xkcd:lime', 'blue', 'cyan', 'purple', 'fuchsia', 'xkcd:lavender', 'xkcd:bronze']
@@ -168,6 +170,7 @@ if command == 'j':
                                               main_stringobjects['object'][18], main_stringobjects['object'][19],
                                               main_stringobjects['object'][20]]
     sti_tolerance_too_high = main_stringobjects['object'][21]
+    sti_values_toplot = main_stringobjects['object'][22]
     # get_old_paths_df henter stier fra alleredeeksisterende eksperiment og lagrer disse i dataframe-format
     df_stier_rs2filer, df_stier_csvfiler = mo.get_old_paths_df(sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
     # mappenavn_til_rs2/csv:
@@ -227,13 +230,14 @@ if command == 'j':
     #               list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
-    list_paths_differences, list_diff_navn, list_paths_values = \
-        ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
-                                   df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
-                                   list_excluded_files_2linescalc, list_valnavn, list_2lines_inside)
+    # list_paths_differences, list_diff_navn, list_paths_values = \
+    #     ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
+    #                                df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
+    #                                list_excluded_files_2linescalc, list_valnavn, list_2lines_inside,
+    #                                sti_values_toplot)
 
     """her plottes det som skal plottes"""
-    ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_valnavn,
-                     mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-                     list_of_lists_attributes, attribute_type, fysiske_enheter, list_excluded_files_2linescalc,
-                     list_colormaps, list_2lines_inside)
+    # ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_valnavn,
+    #                  mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
+    #                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_excluded_files_2linescalc,
+    #                  list_colormaps, list_2lines_inside)

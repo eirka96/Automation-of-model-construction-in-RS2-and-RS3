@@ -286,6 +286,7 @@ list_folders"""
 def get_name_folders(path_storage_files):
     path_storage_files = alternate_slash([path_storage_files])[0]
     list_folders = os.listdir(path_storage_files)  # henter de mappenavn som ligger i main_path
+    list_folders.pop(0)
     list_folders.sort(key=len)  # sørger for at mappenavnene blir sortert i stigende rekkefølge
     list_csv_folders, list_rs2_folders = [s + '/csv/' for s in list_folders], [s + '/rs2/' for s in list_folders]
     # må endres hvis mappestrukturen endres!!!!!!
@@ -798,7 +799,7 @@ def plot_value_selection(path, parameter_navn, diff_navn, val_navn, fysiske_enhe
             figure, axis = plt.subplots(1, 2)
             for i, diff_name in enumerate(diff_navn):
                 axis[i].set_prop_cycle(color=color_map[type0])
-                for name, group in groups:
+                for z, (name, group) in enumerate(groups):
                     range0 = val_navn[list_df_indices[k][i]]
                     range1 = val_navn[list_df_indices[k][i]+1]
                     axis[i].plot(group['indices_true'], group[[range0]], marker="o", linestyle="", label=name)
@@ -808,9 +809,10 @@ def plot_value_selection(path, parameter_navn, diff_navn, val_navn, fysiske_enhe
                     axis[i].set_xlabel('modellnummer')
                     axis[i].set_ylabel('differanse av ' + par_navn + ' ' + enhet)
                     axis[i].set_title('plot, differanse av ' + par_navn + 'sortert mhp. ' + type0 + ', ' + diff_name)
+                    plt.savefig("difference_selection{}.png".format(z))
                 # for j, txt in enumerate(df['indices_true']):
                 #     axis[i].annotate(txt, (txt, df[diff_name][j]), fontsize=8)
-            plt.show()
+                # plt.show()
 
     return
 
@@ -859,10 +861,11 @@ def plot_difference_selection(paths, parameter_navn, differanse_navn, fysiske_en
                 #     plt.
                 #     plt.
                 #     plt.
+
                 i += 1
                 # plt.legend()
                 # plt.legend()
-            plt.show()
+            # plt.show()
             plt.savefig("difference_selection{}.png".format(k))
     return
 
@@ -914,7 +917,8 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
 
 
 def create_values_csv(foldername_csv, list_values, parameternavn_interpret, paths_fil_csv,
-                      elements_corrupted_files, type_verdi, path_data_storage, val_navn, list_2lines_inside):
+                      elements_corrupted_files, type_verdi, path_data_storage, val_navn, list_2lines_inside,
+                      sti_values_toplot):
     if all(path is None for path in paths_fil_csv):
         return None, None
     t = path_data_storage
@@ -933,8 +937,9 @@ def create_values_csv(foldername_csv, list_values, parameternavn_interpret, path
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
         list_to_df.append([navn] + values)
     # df_differences.to_csv(path_or_buf=path, sep=';', mode='w')
-    df_difference = pd.DataFrame(list_to_df, columns=val_navn)
-    df_difference.to_csv(path_or_buf=path, sep=';', mode='w', index=False)
+    df_values = pd.DataFrame(list_to_df, columns=val_navn)
+    df_values.to_csv(path_or_buf=path, sep=';', mode='w', index=False)
+    df_values.to_csv(path_or_buf=sti_values_toplot, sep=';', mode='a', index=False)
     return path
 
 
@@ -1007,7 +1012,8 @@ def get_elements_corrupted_files(file_paths):
 # returns which of the parameters in the sensitivity study that are lists and returns a lis of the lists
 def return_lists(list_attributes):
     checker = ['bm', 'ss', 'k', 'od', 'm', 'v', 'y', 'x']
-    res = [elem for elem in zip(list_attributes, checker) if isinstance(elem[0], list)]
+    res = [elem for elem in zip(list_attributes, checker) if (isinstance(elem[0], list) and elem[1] not in
+                                                              ['bm', 'ss', 'k', 'od'])]
     res = list(zip(*res))
     return list(res[0]), list(res[1])
 

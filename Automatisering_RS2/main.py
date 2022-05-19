@@ -95,6 +95,7 @@ if command == 'j':
                                                              r'\liste_stier_PycharmProjects_automatisering.txt ',
                                                              sep=';')
     main_stringobjects = pd.read_csv(liste_stier_PycharmProjects_automatisering['object'][0], sep=';')
+
     # list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
     #     list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
     #     [], [], [], [], [], [], [], [], []

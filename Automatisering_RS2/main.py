@@ -81,18 +81,22 @@ if command == 'j':
                            [[15, 15], [15, 15], [15, 0], [16, 0], [16, 16]],
                            [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]]
 
-    valnavn = ['file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high', 'quad_high - sigma 1, inbetween',
-               'quad_high - totaldeformasjon, low', 'quad_high - totaldeformasjon, high',
-               'quad_high - totaldeformasjon, inbetween',
-               'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
-               'quad_low - totaldeformasjon, low', 'quad_low - totaldeformasjon, high',
-               'quad_low - totaldeformasjon, inbetween']
+    valnavn_2lines = ['file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high', 'quad_high - sigma 1, inbetween',
+                      'quad_high - totaldeformasjon, low', 'quad_high - totaldeformasjon, high',
+                      'quad_high - totaldeformasjon, inbetween',
+                      'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
+                      'quad_low - totaldeformasjon, low', 'quad_low - totaldeformasjon, high',
+                      'quad_low - totaldeformasjon, inbetween']
+    valnavn = ['file_name', 'sigma 1, max', 'totaldeformasjon, max',
+               'quad_high - sigma 1, inbetween', 'quad_high - totaldeformasjon, inbetween',
+               'quad_low - sigma 1, inbetween', 'quad_low - totaldeformasjon, inbetween']
+    list_valnavn_2lines = []
     list_valnavn = []
+    list_valnavn_2lines += 7 * [valnavn_2lines]
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\Users\Eirik\Documents\thesis\eksperimenter'
-                                                             r'\eksperimentTest\base_modeler'
-                                                             r'\Pycharm_automatisering'
-                                                             r'\liste_stier_PycharmProjects_automatisering.txt ',
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperimentTest2'
+                                                             r'\base_modeler\Pycharm_automatisering'
+                                                             r'\liste_stier_PycharmProjects_automatisering.txt',
                                                              sep=';')
     main_stringobjects = pd.read_csv(liste_stier_PycharmProjects_automatisering['object'][0], sep=';')
 
@@ -171,7 +175,8 @@ if command == 'j':
                                               main_stringobjects['object'][18], main_stringobjects['object'][19],
                                               main_stringobjects['object'][20]]
     sti_tolerance_too_high = main_stringobjects['object'][21]
-    sti_values_toplot = main_stringobjects['object'][22]
+    sti_values_toplot_2lines = main_stringobjects['object'][22]
+    sti_values_toplot = main_stringobjects['object'][23]
     # get_old_paths_df henter stier fra alleredeeksisterende eksperiment og lagrer disse i dataframe-format
     df_stier_rs2filer, df_stier_csvfiler = mo.get_old_paths_df(sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier)
     # mappenavn_til_rs2/csv:
@@ -230,15 +235,13 @@ if command == 'j':
     #               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
     #               list_excluded_files_2linescalc, ll_inner_points)
 
-    """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av matplotlib"""
-    # list_paths_differences, list_diff_navn, list_paths_values = \
-    #     ea.execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappenavn_til_csv,
-    #                                df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
-    #                                list_excluded_files_2linescalc, list_valnavn, list_2lines_inside,
-    #                                sti_values_toplot)
-
-    """her plottes det som skal plottes"""
-    # ea.execute_plots(list_paths_differences, list_diff_navn, list_paths_values, list_valnavn,
-    #                  mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-    #                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_excluded_files_2linescalc,
-    #                  list_colormaps, list_2lines_inside)
+    """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av excel"""
+    list_paths_values_2lines, list_paths_values = ea.execute_data_processing(parameter_navn_interpret,
+                                                                             mappenavn_til_rs2, mappenavn_til_csv,
+                                                                             df_stier_csvfiler, list_points_to_check,
+                                                                             sti_til_mapper_endelige_filer,
+                                                                             list_excluded_files_2linescalc,
+                                                                             list_valnavn_2lines, list_2lines_inside,
+                                                                             sti_values_toplot_2lines,
+                                                                             list_valnavn, sti_values_toplot,
+                                                                             list_0lines_inside, list_1line_inside)

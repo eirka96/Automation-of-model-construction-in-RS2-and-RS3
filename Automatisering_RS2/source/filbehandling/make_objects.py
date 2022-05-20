@@ -287,6 +287,7 @@ def get_name_folders(path_storage_files):
     path_storage_files = alternate_slash([path_storage_files])[0]
     list_folders = os.listdir(path_storage_files)  # henter de mappenavn som ligger i main_path
     list_folders.pop(0)
+    list_folders.pop(0)
     list_folders.sort(key=len)  # sørger for at mappenavnene blir sortert i stigende rekkefølge
     list_csv_folders, list_rs2_folders = [s + '/csv/' for s in list_folders], [s + '/rs2/' for s in list_folders]
     # må endres hvis mappestrukturen endres!!!!!!
@@ -619,6 +620,18 @@ def get_query_positions(query_values):
 
 
 def get_values_to_plot(query_values):
+    arclengths = []
+    values = []
+    for i, query in enumerate(query_values):
+        arclengths.append([])
+        values.append([])
+        for value in query:
+            arclengths[i].append(value[5])
+            values[i].append(value[6])
+    return arclengths, values
+
+
+def get_values_to_plot_arc_and_val(query_values):
     to_plot = []
     for i, query in enumerate(query_values):
         to_plot.append([])
@@ -750,7 +763,7 @@ def get_indices_paths_selection(list_attributes, attribute_types, paths, element
     return indices_true, indices_augm
 
 
-def get_category(list_attributes, attribute_types, paths, elements_corrupted_files, list_exluded_files):
+def get_category(list_attributes, attribute_types, paths):
     category = []
     indices = []
     i, p = 0, 0
@@ -916,8 +929,9 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
     return [paths[0][0], paths[1][0]], diff_navn
 
 
-def create_values_csv(foldername_csv, list_values, parameternavn_interpret, paths_fil_csv,
-                      elements_corrupted_files, type_verdi, path_data_storage, val_navn, list_2lines_inside,
+def create_values_csv(foldername_csv, list_values_2line, list_values, parameternavn_interpret, paths_fil_csv,
+                      elements_corrupted_files_2lines, type_verdi, path_data_storage, val_navn_2lines,
+                      list_2lines_inside, sti_values_toplot_2lines, elements_corrupted_files, val_navn,
                       sti_values_toplot):
     if all(path is None for path in paths_fil_csv):
         return None, None
@@ -926,21 +940,28 @@ def create_values_csv(foldername_csv, list_values, parameternavn_interpret, path
     p = parameternavn_interpret.copy()
     p.pop()
     # fjerner de paths som er korruperte
-    paths_2lines = get_paths_zone2lines(paths_fil_csv, elements_corrupted_files, list_2lines_inside)
+    paths_2lines = get_paths_zone2lines(paths_fil_csv, elements_corrupted_files_2lines, list_2lines_inside)
     paths_2lines = [re.findall(r'/(?:.(?!/))+$', path[1])[0][1:] for path in paths_2lines]
     navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
+    paths = get_paths_without_corrupted(paths_fil_csv, elements_corrupted_files)
+    navn_allines = [name.replace('.csv', '') for name in paths]
     # lager paths til der hvor verdiene skal lagres
-    path = t + '/' + foldername_csv + type_verdi + '.csv'
-    # df_differences = pd.DataFrame(columns=['file_name', 'quad_low', 'quad_high'])
+    path_2lines = t + '/' + foldername_csv + type_verdi + '.csv'
+    path_all = t + '/' + foldername_csv + 'max_values.csv'
+    list_to_df_2lines = []
     list_to_df = []
-    for navn, values in zip(navn_2lines, list_values):
+    for navn, values in zip(navn_2lines, list_values_2line):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
+        list_to_df_2lines.append([navn] + values)
+    for navn, values in zip(navn_allines, list_values):
         list_to_df.append([navn] + values)
-    # df_differences.to_csv(path_or_buf=path, sep=';', mode='w')
+    df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)
+    df_values_2lines.to_csv(path_or_buf=path_2lines, sep=';', mode='w', index=False)
+    df_values_2lines.to_csv(path_or_buf=sti_values_toplot_2lines, sep=';', mode='a', index=False)
     df_values = pd.DataFrame(list_to_df, columns=val_navn)
-    df_values.to_csv(path_or_buf=path, sep=';', mode='w', index=False)
+    df_values.to_csv(path_or_buf=path_all, sep=';', mode='w', index=False)
     df_values.to_csv(path_or_buf=sti_values_toplot, sep=';', mode='a', index=False)
-    return path
+    return path_2lines, path_all
 
 
 def get_size_file(filepath):
@@ -980,6 +1001,12 @@ def get_paths_zone2lines(file_paths, elements_corrupted_files, twolines_inside):
     return paths
 
 
+def get_paths_without_corrupted(file_paths, elements_corrupted_files):
+    corrupted_paths = get_corrupted_file_paths(file_paths, elements_corrupted_files)
+    paths = [iteration for iteration in file_paths if iteration not in corrupted_paths]
+    return paths
+
+
 def set_corrupted_files(file_paths, path_list_corrupted_files):
     file_sizes = get_list_size_files(file_paths)
     elements_corrupted_files = get_elements_small_files(file_sizes)
@@ -1000,6 +1027,16 @@ def get_list_paths(folder_name, df_paths):
 
 
 def get_elements_corrupted_files(file_paths):
+    if all(path is None for path in file_paths):
+        return [None for i in file_paths]
+    file_sizes = get_list_size_files(file_paths)
+    elements = get_elements_small_files(file_sizes)
+    if not elements:
+        elements = [None for i in file_paths]
+    return elements
+
+
+def get_elements_corrupted_files_2lines(file_paths):
     if all(path is None for path in file_paths):
         return None
     file_sizes = get_list_size_files(file_paths)

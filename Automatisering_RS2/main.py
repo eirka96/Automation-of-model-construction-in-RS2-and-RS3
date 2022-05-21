@@ -82,14 +82,14 @@ if command == 'j':
                            [[15, 15], [15, 15], [15, 0], [16, 0], [16, 16]],
                            [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]]
 
-    valnavn_2lines = ['file_name', 'od', 'v', 'x', 'quad_high - sigma1, low', 'quad_high - sigma1, high',
+    valnavn_2lines = ['od', 'v', 'x', 'file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high',
                       'quad_high - sigma 1, inbetween',
                       'quad_high - totaldeformasjon, low', 'quad_high - totaldeformasjon, high',
                       'quad_high - totaldeformasjon, inbetween',
                       'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
                       'quad_low - totaldeformasjon, low', 'quad_low - totaldeformasjon, high',
                       'quad_low - totaldeformasjon, inbetween']
-    valnavn = ['file_name', 'od', 'v', 'x', 'sigma 1, max', 'totaldeformasjon, max',
+    valnavn = ['od', 'v', 'x', 'file_name', 'sigma 1, max', 'totaldeformasjon, max',
                'quad_high - sigma 1, inbetween', 'quad_high - totaldeformasjon, inbetween',
                'quad_low - sigma 1, inbetween', 'quad_low - totaldeformasjon, inbetween']
     list_valnavn_2lines = []

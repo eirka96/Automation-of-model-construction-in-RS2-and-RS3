@@ -945,18 +945,18 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     list_navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
     paths = get_paths_without_corrupted(paths_fil_csv, elements_corrupted_files)
     list_navn_allines = [name.replace('.csv', '') for name in paths]
-    list_varied_param_values = [get_parameter_values(navn, parameters_varied) for navn in list_navn_allines]
+    list_varied_values = [get_parameter_values(navn, parameters_varied) for navn in list_navn_allines]
 
     # lager paths til der hvor verdiene skal lagres
     path_2lines = t + '/' + foldername_csv + type_verdi + '.csv'
     path_all = t + '/' + foldername_csv + 'max_values.csv'
     list_to_df_2lines = []
     list_to_df = []
-    for navn, values, varied_param_values in zip(list_navn_2lines, list_values_2line, list_varied_param_values):
+    for navn, values in zip(list_navn_2lines, list_values_2line):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
-        list_to_df_2lines.append([navn] + varied_param_values + values)
-    for navn, values, varied_param_values in zip(list_navn_allines, list_values, list_varied_param_values):
-        list_to_df.append([navn] + varied_param_values + values)
+        list_to_df_2lines.append([navn] + list_varied_values + values)
+    for navn, values in zip(list_navn_allines, list_values):
+        list_to_df.append([navn] + list_varied_values + values)
     df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)
     df_values_2lines.to_csv(path_or_buf=path_2lines, sep=';', mode='w', index=False)
     df_values_2lines.to_csv(path_or_buf=sti_values_toplot_2lines, sep=';', mode='a', index=False)

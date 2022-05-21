@@ -932,7 +932,7 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
 def create_values_csv(foldername_csv, list_values_2line, list_values, parameternavn_interpret, paths_fil_csv,
                       elements_corrupted_files_2lines, type_verdi, path_data_storage, val_navn_2lines,
                       list_2lines_inside, sti_values_toplot_2lines, elements_corrupted_files, val_navn,
-                      sti_values_toplot):
+                      sti_values_toplot, parameters_varied):
     if all(path is None for path in paths_fil_csv):
         return None, None
     t = path_data_storage
@@ -942,19 +942,21 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     # fjerner de paths som er korruperte
     paths_2lines = get_paths_zone2lines(paths_fil_csv, elements_corrupted_files_2lines, list_2lines_inside)
     paths_2lines = [re.findall(r'/(?:.(?!/))+$', path[1])[0][1:] for path in paths_2lines]
-    navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
+    list_navn_2lines = [name.replace('.csv', '') for name in paths_2lines]
     paths = get_paths_without_corrupted(paths_fil_csv, elements_corrupted_files)
-    navn_allines = [name.replace('.csv', '') for name in paths]
+    list_navn_allines = [name.replace('.csv', '') for name in paths]
+    list_varied_values = [get_parameter_values(navn, parameters_varied) for navn in list_navn_allines]
+
     # lager paths til der hvor verdiene skal lagres
     path_2lines = t + '/' + foldername_csv + type_verdi + '.csv'
     path_all = t + '/' + foldername_csv + 'max_values.csv'
     list_to_df_2lines = []
     list_to_df = []
-    for navn, values in zip(navn_2lines, list_values_2line):
+    for navn, values in zip(list_navn_2lines, list_values_2line):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
-        list_to_df_2lines.append([navn] + values)
-    for navn, values in zip(navn_allines, list_values):
-        list_to_df.append([navn] + values)
+        list_to_df_2lines.append([navn] + list_varied_values + values)
+    for navn, values in zip(list_navn_allines, list_values):
+        list_to_df.append([navn] + list_varied_values + values)
     df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)
     df_values_2lines.to_csv(path_or_buf=path_2lines, sep=';', mode='w', index=False)
     df_values_2lines.to_csv(path_or_buf=sti_values_toplot_2lines, sep=';', mode='a', index=False)
@@ -962,6 +964,16 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     df_values.to_csv(path_or_buf=path_all, sep=';', mode='w', index=False)
     df_values.to_csv(path_or_buf=sti_values_toplot, sep=';', mode='a', index=False)
     return path_2lines, path_all
+
+
+def get_parameter_values(navn_allines, params_varied):
+    regex_shale = r'(?<=_{})\d*\.*\d*'
+    param_values = []
+    for param in params_varied:
+        reg_pat = regex_shale.format(param)
+        param_value = float(re.findall(reg_pat, navn_allines)[0])
+        param_values.append(param_value)
+    return param_values
 
 
 def get_size_file(filepath):

@@ -229,7 +229,7 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                             df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
                             list_excluded_files_2linescalc, list_valnavn_2lines, list_2lines_inside,
                             sti_values_toplot_2lines, list_valnavn, sti_values_toplot,
-                            list_0lines_inside, list_1line_inside):
+                            list_0lines_inside, list_1line_inside, parameters_varied):
     list_values = mo.make_container_diff(mappenavn_til_rs2)
     list_values_2lines = mo.make_container_diff(mappenavn_til_rs2)
     parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
@@ -301,7 +301,7 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                                                                valnavn_2lines, twolines_inside,
                                                                sti_values_toplot_2lines,
                                                                elements_files_corrupted, valnavn,
-                                                               sti_values_toplot)
+                                                               sti_values_toplot, parameters_varied)
         list_path_values_2lines[k].append(path_value_2lines)
         list_path_values[k].append(path_val_all)
     return list_path_values_2lines, list_path_values

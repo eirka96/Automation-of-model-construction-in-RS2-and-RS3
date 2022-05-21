@@ -52,6 +52,7 @@ if command == 'j':
     list_change_fieldstress = [300, 500, 800, 1200]
     ant_parametere_interpret = 2
     parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
+    parameters_varied = ['od', 'v', 'x']
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
@@ -81,13 +82,14 @@ if command == 'j':
                            [[15, 15], [15, 15], [15, 0], [16, 0], [16, 16]],
                            [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]]
 
-    valnavn_2lines = ['file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high', 'quad_high - sigma 1, inbetween',
+    valnavn_2lines = ['od', 'v', 'x', 'file_name', 'quad_high - sigma1, low', 'quad_high - sigma1, high',
+                      'quad_high - sigma 1, inbetween',
                       'quad_high - totaldeformasjon, low', 'quad_high - totaldeformasjon, high',
                       'quad_high - totaldeformasjon, inbetween',
                       'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
                       'quad_low - totaldeformasjon, low', 'quad_low - totaldeformasjon, high',
                       'quad_low - totaldeformasjon, inbetween']
-    valnavn = ['file_name', 'sigma 1, max', 'totaldeformasjon, max',
+    valnavn = ['od', 'v', 'x', 'file_name', 'sigma 1, max', 'totaldeformasjon, max',
                'quad_high - sigma 1, inbetween', 'quad_high - totaldeformasjon, inbetween',
                'quad_low - sigma 1, inbetween', 'quad_low - totaldeformasjon, inbetween']
     list_valnavn_2lines = []
@@ -244,4 +246,5 @@ if command == 'j':
                                                                              list_valnavn_2lines, list_2lines_inside,
                                                                              sti_values_toplot_2lines,
                                                                              list_valnavn, sti_values_toplot,
-                                                                             list_0lines_inside, list_1line_inside)
+                                                                             list_0lines_inside, list_1line_inside,
+                                                                             parameters_varied)

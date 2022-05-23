@@ -640,23 +640,54 @@ def get_values_to_plot_arc_and_val(query_values):
     return to_plot
 
 
-def get_values_quad(to_plot, points, query_positions, ind_to_plot):
+def get_values_quad0(to_plot, points, query_positions):
     if not (to_plot is not None and points is not None):
         return None
-    value_intersect, max_value, indices_max_value = [], [], []
+    value_intersect, indices_max_value = [], []
     points = [[round(point[0], 3), round(point[1], 3)] for point in points]
-    for data_sep, q_pos_sep in zip(to_plot, query_positions):
-        values = [value for value, q_pos in zip(data_sep, q_pos_sep) if q_pos in points]
-        positions = [q_pos for q_pos in q_pos_sep if q_pos in points]
-        indices = [i for i, q_pos in enumerate(q_pos_sep) if q_pos in points]
-        value_intersect.append([values[ind_to_plot[0]][1], values[ind_to_plot[1]][1]])
-        a = max([indices[ind_to_plot[0]], indices[ind_to_plot[1]]])
-        b = min([indices[ind_to_plot[0]], indices[ind_to_plot[1]]])
-        check = [i for i in range(b, a + 1, 1)]
-        index_max_value = int(statistics.median(check)//1)  # //1 rounds number down to closest integer
-        max_value.append(data_sep[index_max_value])
-        indices_max_value.append(index_max_value)
-    return [value_intersect, max_value]
+    for k, (data_sep, q_pos_sep) in enumerate(zip(reversed(to_plot), reversed(query_positions))):
+        values, indices = [], []
+        for point in points:
+            for i, (value, q_pos) in enumerate(zip(data_sep, q_pos_sep)):
+                if q_pos == point:
+                    values.append(value[1])
+                    indices.append(i)
+        idx_a = indices[0]
+        idx_b = indices[1]
+        idx_c = indices[2]
+        idx_d = indices[3]
+        if k == 0:
+            max_value_h, max_val_with_arc_h = get_max_totdef(idx_a, idx_b, data_sep)
+            max_value_l, max_val_with_arc_l = get_max_totdef(idx_c, idx_d, data_sep)
+            index_max_value_h = data_sep.index(max_val_with_arc_h)
+            index_max_value_l = data_sep.index(max_val_with_arc_l)
+            list_append = [values[0], values[1], max_value_h, values[3], values[2], max_value_l]
+            for a in list_append:
+                value_intersect.append(a)
+            indices_max_value.append(index_max_value_h), indices_max_value.append(index_max_value_l)
+        else:
+            max_value_h = data_sep[indices_max_value[0]][1]
+            max_value_l = data_sep[indices_max_value[1]][1]
+            list_append = [values[0], values[1], max_value_h, values[3], values[2], max_value_l]
+            for a in list_append:
+                value_intersect.append(a)
+    return value_intersect
+
+
+def get_max_totdef(idx_a, idx_b, data_sep):
+    if idx_a < idx_b:
+        indices = [i for i in range(idx_a, idx_b + 1, 1)]
+    else:
+        l1 = [i for i in range(0, idx_b + 1, 1)]
+        l2 = [i for i in range(idx_a, len(data_sep), 1)]
+        indices = l1 + l2
+
+    data = [data_sep[idx] for idx in indices]
+    data_exl_arc = [data_sep[idx][1] for idx in indices]
+    max_def = max(data_exl_arc)
+    idx = data_exl_arc.index(max_def)
+    max_def_with_arc = data[idx]
+    return max_def, max_def_with_arc
 
 
 def get_difference(to_plot, points, query_positions):
@@ -946,15 +977,15 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     paths = get_paths_without_corrupted(paths_fil_csv, elements_corrupted_files)
     list_navn_allines = [name.replace('.csv', '') for name in paths]
     list_varied_param_values = [get_parameter_values(navn, parameters_varied) for navn in list_navn_allines]
-
+    list_varied_param_values_2lines = [get_parameter_values(navn, parameters_varied) for navn in list_navn_2lines]
     # lager paths til der hvor verdiene skal lagres
     path_2lines = t + '/' + foldername_csv + type_verdi + '.csv'
     path_all = t + '/' + foldername_csv + 'max_values.csv'
     list_to_df_2lines = []
     list_to_df = []
-    for navn, values, varied_param_values in zip(list_navn_2lines, list_values_2line, list_varied_param_values):
+    for navn, values, varied_param_values_2lines in zip(list_navn_2lines, list_values_2line, list_varied_param_values_2lines):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
-        list_to_df_2lines.append([navn] + varied_param_values + values)
+        list_to_df_2lines.append([navn] + varied_param_values_2lines + values)
     for navn, values, varied_param_values in zip(list_navn_allines, list_values, list_varied_param_values):
         list_to_df.append([navn] + varied_param_values + values)
     df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)

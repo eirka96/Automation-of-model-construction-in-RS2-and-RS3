@@ -265,7 +265,7 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                 arclen_max_val_def = arclengths_to_plot[1][idx_max_val_def]
                 sig1_max_val_def = values_to_plot[0][idx_max_val_def]
                 arclen_sig1_max_val_def = arclen_max_val_def
-                values = [sig1_max_val_def, max_val_def, None, None, None, None]
+                values = [max_val_def, sig1_max_val_def, None, None, None, None]
                 list_values[k].append(values)
                 _0lines_inside.pop(idx0)
                 idx0 += 1
@@ -275,19 +275,14 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                 arclen_max_val_def = arclengths_to_plot[1][idx_max_val_def]
                 sig1_max_val_def = values_to_plot[0][idx_max_val_def]
                 arclen_sig1_max_val_def = arclen_max_val_def
-                values = [sig1_max_val_def, max_val_def, None, None, None, None]
+                values = [max_val_def, sig1_max_val_def, None, None, None, None]
                 list_values[k].append(values)
                 _1line_inside.pop(idx1)
                 idx1 += 1
             else:
                 points = points_to_check.pop(idx2)
                 idx2 += 1
-                quad_high = mo.get_values_quad(to_plot, points, query_positions, [0, 1])
-                quad_low = mo.get_values_quad(to_plot, points, query_positions, [2, 3])
-                values_to_plot_2lines = [quad_high[0][0][0], quad_high[0][0][1], quad_high[1][0][1], quad_high[0][1][0],
-                                         quad_high[0][1][1], quad_high[1][1][1],
-                                         quad_low[0][0][0], quad_low[0][0][1], quad_low[1][0][1], quad_low[0][1][0],
-                                         quad_low[0][1][1], quad_low[1][1][1]]
+                values_to_plot_2lines = mo.get_values_quad0(to_plot, points, query_positions)
                 values = [None, None, values_to_plot_2lines[2], values_to_plot_2lines[5], values_to_plot_2lines[8],
                           values_to_plot_2lines[11]]
                 if all(value is not None for value in values_to_plot_2lines):

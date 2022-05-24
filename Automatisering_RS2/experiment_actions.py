@@ -111,10 +111,10 @@ def execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary
                                      for paths in list_2lines_inside[i]]
             for j in range(df_stier_rs2filer.shape[0]):
                 path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
-                path_fil_csv = df_stier_rs2filer[navn_rs2][j]
+                path_fil_csv = df_stier_csvfiler[navn_csv][j]
                 if isinstance(path_fil_rs2, str):
                     path_to_copy_rs2 = df_stier_rs2filer['S_bm80_ss1_k1_od200/rs2/'][j]
-                    path_to_copy_csv = df_stier_csvfiler['S_bm80_ss1_k1_od200/rs2/'][j]
+                    path_to_copy_csv = df_stier_csvfiler['S_bm80_ss1_k1_od200/csv/'][j]
                     st.copyfile(path_to_copy_rs2, path_fil_rs2)
                     st.copyfile(path_to_copy_csv, path_fil_csv)
             key_word = 'field stress:\n'

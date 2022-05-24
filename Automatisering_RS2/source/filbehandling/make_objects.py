@@ -286,8 +286,8 @@ list_folders"""
 def get_name_folders(path_storage_files):
     path_storage_files = alternate_slash([path_storage_files])[0]
     list_folders = os.listdir(path_storage_files)  # henter de mappenavn som ligger i main_path
-    list_folders.pop(0)
-    list_folders.pop(0)
+    # list_folders.pop(0)
+    # list_folders.pop(0)
     list_folders.sort(key=len)  # sørger for at mappenavnene blir sortert i stigende rekkefølge
     list_csv_folders, list_rs2_folders = [s + '/csv/' for s in list_folders], [s + '/rs2/' for s in list_folders]
     # må endres hvis mappestrukturen endres!!!!!!

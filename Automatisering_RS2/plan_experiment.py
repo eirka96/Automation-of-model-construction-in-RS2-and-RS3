@@ -115,8 +115,8 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
     #                                                              stress_ratio,
     #                                                              overburden, mektighet_attributes, angel_attributes,
     #                                                              y_attributes, x_attributes)
-    rmm, wzm, sr, ob, m, v, y, x = rock_mass_material, weakness_zone_material, stress_ratio, overburden, \
-                                   mektighet_attributes, angel_attributes, y_attributes, x_attributes
+    rmm, wzm, sr, ob, m, v, y, x = [rock_mass_material], [weakness_zone_material], [stress_ratio], overburden, \
+                                   [mektighet_attributes], angel_attributes, [y_attributes], x_attributes
     shape_matrix_list = get_shape_matrix(rmm, wzm, sr, ob, m, v, y, x)
     with open(path_csv_attributes, 'w', newline='') as file:
         writer_object = writer(file, delimiter=";")

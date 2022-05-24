@@ -48,7 +48,7 @@ if command == 'j':
     """
     # definerer hvilke attributter som endres
     tolerance = 0.001
-    maxiter = 2000
+    maxiter = 10000
     list_change_fieldstress = [300, 500, 800, 1200]
     ant_parametere_interpret = 2
     parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
@@ -56,9 +56,9 @@ if command == 'j':
     fysiske_enheter = ['[MPa]', '[m]']
     # definerer parameterenes størrelser
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
-    y_attributes, x_attributes = [80], [1], [1], [100, 200, 300, 500, 800, 1200], \
-                                 [1], [45, 52.5, 60, 67.5, 75, 82.5, 90], [0], \
-                                 [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 4.5, 5, 5.5, 5.75, 6, 7, 8, 9, 10, 11]
+        y_attributes, x_attributes = 80, 1, 1, [100, 200, 300, 500, 800, 1200], \
+                                     1, [45, 52.5, 60, 67.5, 75, 82.5, 90], 0, \
+                                     [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 4.5, 5, 5.5, 5.75, 6, 7, 8, 9, 10, 11]
     # NB!!!!!! x_attributes er her missvisende, men er valgt å forbli slik pga liten tid. Det er funnet ut at det
     # er mer hensiktsmessig å nytte minste avstand fra sone til tunnelsenter. y blir altså ikke brukt og x er egt
     # denne nye normerte avstand, som i ea.set_model_csv_attributes_batch blir endret til rett x-verdi.

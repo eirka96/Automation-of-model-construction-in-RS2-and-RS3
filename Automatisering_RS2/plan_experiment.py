@@ -86,10 +86,12 @@ def get_ob_index(element):
 
 def set_model_csv_attributes(paths_csv_attributes, rock_mass_material, weakness_zone_material, stress_ratio, overburden,
                              mektighet_attributes, angel_attributes, y_attributes, x_attributes):
-    rmm, wzm, sr, ob, m, v, y, x = get_range_changing_attributes(rock_mass_material, weakness_zone_material,
-                                                                 stress_ratio,
-                                                                 overburden, mektighet_attributes, angel_attributes,
-                                                                 y_attributes, x_attributes)
+    # rmm, wzm, sr, ob, m, v, y, x = get_range_changing_attributes(rock_mass_material, weakness_zone_material,
+    #                                                              stress_ratio,
+    #                                                              overburden, mektighet_attributes, angel_attributes,
+    #                                                              y_attributes, x_attributes)
+    rmm, wzm, sr, ob, m, v, y, x = rock_mass_material, weakness_zone_material, stress_ratio, overburden, \
+                                    mektighet_attributes, angel_attributes, y_attributes, x_attributes
     shape_matrix_list = get_shape_matrix(rmm, wzm, sr, ob, m, v, y, x)
     shape_matrix_list.pop(3)
     for o in ob:

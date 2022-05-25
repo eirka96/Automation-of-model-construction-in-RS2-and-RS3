@@ -118,6 +118,7 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
     rmm, wzm, sr, ob, m, v, y, x = [rock_mass_material], [weakness_zone_material], [stress_ratio], overburden, \
                                    [mektighet_attributes], angel_attributes, [y_attributes], x_attributes
     shape_matrix_list = get_shape_matrix(rmm, wzm, sr, ob, m, v, y, x)
+    number_of_files = 0
     with open(path_csv_attributes, 'w', newline='') as file:
         writer_object = writer(file, delimiter=";")
         list_data = [['bm', 'ss', 'k', 'od', 'm', 'v', 'y', 'x']]
@@ -128,7 +129,8 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
                               '{}'.format(sr[sr_i]), '{}'.format(ob[ob_i]),
                               '{}'.format(m[m_i]), '{}'.format(v[v_i]),
                               '{}'.format(y[y_i]), '{}'.format(x_true[x_i])])
+            number_of_files += 1
         writer_object.writerows(list_data)
         file.close()
-    return
+    return number_of_files
 

@@ -185,10 +185,10 @@ def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stie
 
 
 def calculate(path_rs2_compute, time, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, path_store_unsuc_tol_models,
-              tolerance):
+              tolerance, number_of_files):
     Popen([path_rs2_compute])
     sleep(5)
-    Auto.handlinger_kalkulasjon()
+    Auto.handlinger_kalkulasjon(number_of_files)
     # lukke RS2 Compute
     pag.hotkey('alt', 'f4', interval=time[2])
     mo.get_files_unsuc_tolerance(sti_til_mappe_for_arbeidsfiler, df_filnavn_rs2, path_store_unsuc_tol_models, tolerance)

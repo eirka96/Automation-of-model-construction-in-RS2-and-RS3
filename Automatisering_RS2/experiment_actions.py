@@ -152,7 +152,8 @@ def execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary
     return list_of_df_2lines_info, colnames_of_dfs_2lines_info
 
 
-def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time):
+def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time,
+                files_to_skip):
     while True:
         try:
             command = input('ferdig å undersøke filer?')
@@ -163,7 +164,9 @@ def create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stie
         except NameError:
             print('implementert verdi ukjent')
             continue
-    for navn_rs2, navn_csv in zip(mappenavn_til_rs2, mappenavn_til_csv):
+    for i, (navn_rs2, navn_csv) in enumerate(zip(mappenavn_til_rs2, mappenavn_til_csv)):
+        if i in files_to_skip:
+            continue
         for j in range(df_stier_rs2filer.shape[0]):
             path_fil_rs2 = df_stier_rs2filer[navn_rs2][j]
             path_fil_csv = df_stier_csvfiler[navn_csv][j]
@@ -207,7 +210,7 @@ def store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier
                 sleep(5)
                 pag.press('tab', interval=time[1])
                 pag.press('enter', interval=time[2])
-                i = Auto.store_results_csv_prep(df_koordinater_mus, navn_kol_df_koord_mus, i)
+                i = Auto.store_results_csv_prep_init(df_koordinater_mus, navn_kol_df_koord_mus, i)
                 for k in range(ant_parametere_interpret):
                     navn_parameter = parameter_navn_interpret[k]
                     i = Auto.store_results_in_csv(df_koordinater_mus, navn_kol_df_koord_mus, path_fil_csv,

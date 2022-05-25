@@ -64,6 +64,7 @@ if command == 'j':
     # denne nye normerte avstand, som i ea.set_model_csv_attributes_batch blir endret til rett x-verdi.
     ytre_grenser_utstrekning = [25, 100, 150, 150, 150, 150, 150]
     overdekninger = [25, 100, 200, 300, 500, 800, 1200]
+    files_to_skip = [0]
     n_points_tunnel_boundary = 360
     # definerer en liste over alle attributter (attributes_list, samt en liste over de attributter som skal varieres
     # (list_of_lists_attributes). Brukes i plotte_funksjonene.
@@ -225,7 +226,8 @@ if command == 'j':
         list_of_df_2lines_info[8]
 
     """her lages diskretisering og mesh til alle modellene"""
-    # ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time)
+    # ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time,
+    # files_to_skip)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 

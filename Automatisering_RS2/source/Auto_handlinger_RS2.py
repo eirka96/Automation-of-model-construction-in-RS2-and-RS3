@@ -126,15 +126,25 @@ def store_results_in_csv(df_koordinates_mouse, name_col_df, path_fil_csv, navn_p
 def handlinger_kalkulasjon(time=None):
     if time is None:
         time = time_list
-    # velge antall filer som skal kalkuleres
-    pag.press('enter', interval=time[1])
-    pag.press('tab', presses=9, interval=time[1])
-    pag.hotkey('ctrl', 'a', interval=time[2])
-    pag.press('enter', interval=time[1])
-    # kjøre kalkulasjon
-    pag.press('tab', presses=2, interval=time[2])
-    pag.press('space', interval=time[2])
+    # # velge antall filer som skal kalkuleres
+    # pag.press('enter', interval=time[1])
+    # pag.press('tab', presses=9, interval=time[1])
+    # pag.hotkey('ctrl', 'a', interval=time[2])
+    # pag.press('enter', interval=time[1])
+    # # kjøre kalkulasjon
+    # pag.press('tab', presses=2, interval=time[2])
+    # pag.press('space', interval=time[2])
     # sjekke prosessor bruken, så lenge den er over en grense så venter resten av scriptet med å kjøre
+    while True:
+        try:
+            command = input('ferdig å legge til filer?')
+            if command == 'j':
+                break
+            else:
+                print('j for ja din nisse!')
+        except NameError:
+            print('implementert verdi ukjent')
+            continue
     procname = 'feawin.exe'
     bool_proc = check_if_process_running(procname)  # feawin er navnet på .exe-fila til RS2 Compute
     sleep(5)

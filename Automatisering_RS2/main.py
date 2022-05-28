@@ -102,7 +102,7 @@ if command == 'j':
     list_valnavn = []
     list_valnavn_2lines += 7 * [valnavn_2lines]
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\mektighet_4'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\mektighet_1'
                                                              r'\base_modeler\Pycharm_automatisering'
                                                              r'\liste_stier_PycharmProjects_automatisering.txt',
                                                              sep=';')

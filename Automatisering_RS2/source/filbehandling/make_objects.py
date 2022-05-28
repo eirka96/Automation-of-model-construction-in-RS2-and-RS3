@@ -1177,9 +1177,46 @@ def get_files_unsuc_tolerance(path_arbeidsfiler, list_navn_modell, path_store_un
     return
 
 
-def get_x_distance(normalized_distance_list, zone_angle):
+class AddIt:
+
+    """
+    Add it er en iterator klasse. Hensikt: iterere over vektor for minste avstand fra senter sone til senter tunnel
+    og legge til halvemektigheten slik at lineament nærest tunnelsenter alltid er på samme sted uavhengig av mektigheten
+
+    Viktig:
+    Sentinel: markerer slutten for objektet og vil være tilordnet: sentinel = object(), med mindre noe annet er definert
+    """
+
+    def __init__(self, iter_object, mektighet, sentinel=object()):
+        self.count = 0
+        self.len_iter_object = len(iter_object)
+        self.iter_object = iter_object
+        self.mektighet = mektighet
+        self.sentinel = sentinel
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.count >= self.len_iter_object:
+            return self.sentinel
+        if self.count == 0:
+            ret = self.iter_object[self.count]
+        else:
+            ret = self.iter_object[self.count] + self.mektighet / 2
+        self.count += 1
+        return ret
+
+    __call__ = __next__
+
+
+def get_x_distance(normalized_distance_list, zone_angle, mektighet):
     zone_angle = np.deg2rad(zone_angle)
-    x_distance_list = [round(norm_dist/np.sin(zone_angle), 2) for norm_dist in normalized_distance_list]
+    sentinel = object()
+    ai = AddIt(normalized_distance_list, mektighet, sentinel)
+    x_distance_list = []
+    for i in iter(ai, sentinel):
+        x_distance_list.append(round(i/np.sin(zone_angle), 2))
     return x_distance_list
 
 

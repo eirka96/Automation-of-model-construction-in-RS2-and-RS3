@@ -228,7 +228,7 @@ if command == 'j':
 
     """her lages diskretisering og mesh til alle modellene"""
     ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time,
-    files_to_skip)
+                   files_to_skip)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 

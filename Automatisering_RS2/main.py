@@ -49,6 +49,8 @@ if command == 'j':
     # definerer hvilke attributter som endres
     tolerance = 0.001
     maxiter = 10000
+    number_of_angles = 7
+    number_of_od = 6
     list_change_fieldstress = [300, 500, 800, 1200]
     ant_parametere_interpret = 2
     parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
@@ -58,7 +60,9 @@ if command == 'j':
     rock_mass_material, weakness_zone_material, stress_ratio, overburden, mektighet_attributes, angel_attributes, \
         y_attributes, x_attributes = 80, 1, 1, [100, 200, 300, 500, 800, 1200], \
                                      4, [45, 52.5, 60, 67.5, 75, 82.5, 90], 0, \
-                                     [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 4.5, 5, 5.5, 5.75, 6, 7, 8, 9, 10, 11]
+                                     [0, 0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 4.5, 5, 5.5, 5.75, 6, 7, 8, 9, 10, 11, 13, 15,
+                                      20]
+    true_lengths = [x + mektighet_attributes/2 for i, x in enumerate(x_attributes) if i > 0]
     # NB!!!!!! x_attributes er her missvisende, men er valgt å forbli slik pga liten tid. Det er funnet ut at det
     # er mer hensiktsmessig å nytte minste avstand fra sone til tunnelsenter. y blir altså ikke brukt og x er egt
     # denne nye normerte avstand, som i ea.set_model_csv_attributes_batch blir endret til rett x-verdi.
@@ -85,8 +89,8 @@ if command == 'j':
                            [[15, 15], [15, 15], [15, 0], [16, 0], [16, 16]],
                            [[15, 15], [15, 15], [15, 0], [15, 0], [16, 16], [16, 16], [16, 0]]]
 
-    valnavn_2lines = ['file_name', 'od', 'v', 'x', 'quad_high - sigma1, low', 'quad_high - sigma1, high',
-                      'quad_high - sigma 1, inbetween',
+    valnavn_2lines = ['file_name', 'true_lengths', 'od', 'v', 'x', 'quad_high - sigma1, low',
+                      'quad_high - sigma1, high', 'quad_high - sigma 1, inbetween',
                       'quad_high - totaldeformasjon, low', 'quad_high - totaldeformasjon, high',
                       'quad_high - totaldeformasjon, inbetween',
                       'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
@@ -99,7 +103,8 @@ if command == 'j':
     list_valnavn = []
     list_valnavn_2lines += 7 * [valnavn_2lines]
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\eksperimentTest2'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\Users\Eirik\Documents\thesis\eksperimenter'
+                                                             r'\eksperimentTest'
                                                              r'\base_modeler\Pycharm_automatisering'
                                                              r'\liste_stier_PycharmProjects_automatisering.txt',
                                                              sep=';')
@@ -252,4 +257,4 @@ if command == 'j':
                                                                              sti_values_toplot_2lines,
                                                                              list_valnavn, sti_values_toplot,
                                                                              list_0lines_inside, list_1line_inside,
-                                                                             parameters_varied)
+                                                                             parameters_varied, true_lengths)

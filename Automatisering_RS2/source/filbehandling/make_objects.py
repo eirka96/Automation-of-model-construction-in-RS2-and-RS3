@@ -963,7 +963,7 @@ def create_difference_csv(foldername_csv, list_differences, parameternavn_interp
 def create_values_csv(foldername_csv, list_values_2line, list_values, parameternavn_interpret, paths_fil_csv,
                       elements_corrupted_files_2lines, type_verdi, path_data_storage, val_navn_2lines,
                       list_2lines_inside, sti_values_toplot_2lines, elements_corrupted_files, val_navn,
-                      sti_values_toplot, parameters_varied):
+                      sti_values_toplot, parameters_varied, list_true_lengths):
     if all(path is None for path in paths_fil_csv):
         return None, None
     t = path_data_storage
@@ -983,11 +983,13 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     path_all = t + '/' + foldername_csv + 'max_values.csv'
     list_to_df_2lines = []
     list_to_df = []
-    for navn, values, varied_param_values_2lines in zip(list_navn_2lines, list_values_2line, list_varied_param_values_2lines):
+    for navn, values, varied_param_values_2lines, true_len in zip(list_navn_2lines, list_values_2line,
+                                                                  list_varied_param_values_2lines, list_true_lengths):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
-        list_to_df_2lines.append([navn] + varied_param_values_2lines + values)
-    for navn, values, varied_param_values in zip(list_navn_allines, list_values, list_varied_param_values):
-        list_to_df.append([navn] + varied_param_values + values)
+        list_to_df_2lines.append([navn] + true_len + varied_param_values_2lines + values)
+    for navn, values, varied_param_values, true_len in zip(list_navn_allines, list_values, list_varied_param_values,
+                                                 list_true_lengths):
+        list_to_df.append([navn] + true_len + varied_param_values + values)
     df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)
     df_values_2lines.to_csv(path_or_buf=path_2lines, sep=';', mode='w', index=False)
     df_values_2lines.to_csv(path_or_buf=sti_values_toplot_2lines, sep=';', mode='a', index=False)

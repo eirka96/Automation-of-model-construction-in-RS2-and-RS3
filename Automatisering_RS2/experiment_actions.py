@@ -232,7 +232,7 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                             df_stier_csvfiler, list_points_to_check, sti_til_mapper_endelige_filer,
                             list_excluded_files_2linescalc, list_valnavn_2lines, list_2lines_inside,
                             sti_values_toplot_2lines, list_valnavn, sti_values_toplot,
-                            list_0lines_inside, list_1line_inside, parameters_varied):
+                            list_0lines_inside, list_1line_inside, parameters_varied, true_lengths):
     list_values = mo.make_container_diff(mappenavn_til_rs2)
     list_values_2lines = mo.make_container_diff(mappenavn_til_rs2)
     parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
@@ -255,9 +255,17 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
         elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
         elements_files_corrupted_2lines = mo.get_elements_corrupted_files_2lines(df_stier_csvfiler[navn_csv])
         idx0, idx1, idx2 = 0, 0, 0
+        true_lengths_copy = true_lengths.copy()
+        list_true_lengths = []
         for z, (csv_sti, corrupted) in enumerate(zip(df_stier_csvfiler[navn_csv], elements_files_corrupted)):
+            if true_lengths_copy:
+                true_len = true_lengths_copy.pop(0)
+            else:
+                true_lengths_copy = true_lengths.copy()
+                true_len = true_lengths_copy.pop(0)
             if corrupted is not None:
                 continue
+            list_true_lengths.append(true_len)
             query_values = mo.get_Query_values(csv_sti, parameter_navn_interpret0)
             arclengths_to_plot, values_to_plot = mo.get_values_to_plot(query_values)
             to_plot = mo.get_values_to_plot_arc_and_val(query_values)
@@ -299,36 +307,8 @@ def execute_data_processing(parameter_navn_interpret, mappenavn_til_rs2, mappena
                                                                valnavn_2lines, twolines_inside,
                                                                sti_values_toplot_2lines,
                                                                elements_files_corrupted, valnavn,
-                                                               sti_values_toplot, parameters_varied)
+                                                               sti_values_toplot, parameters_varied, list_true_lengths)
         list_path_values_2lines[k].append(path_value_2lines)
         list_path_values[k].append(path_val_all)
     return list_path_values_2lines, list_path_values
 
-
-def execute_plots(list_paths_differences, list_diff_navn, list_path_values, list_valnavn,
-                  mappenavn_til_rs2, mappenavn_til_csv, parameter_navn_interpret, df_stier_csvfiler,
-                  list_of_lists_attributes, attribute_type, fysiske_enheter, list_exluded_files_2linescalc,
-                  list_color_map, list_2lines_inside):
-    for navn_rs2, navn_csv, paths_differences, diff_navn, path_value, (exl_files_colname, exluded_files), color_map, \
-        valnavn, (twolines_colname, twolines_inside) in zip(
-            mappenavn_til_rs2, mappenavn_til_csv, list_paths_differences, list_diff_navn, list_path_values,
-            list_exluded_files_2linescalc.iteritems(), list_color_map, list_valnavn, list_2lines_inside.iteritems()):
-        if twolines_inside.empty or twolines_inside.isnull().values.any():
-            continue
-        parameter_navn_interpret0 = mo.prep_parameter_navn(parameter_navn_interpret)
-        elements_files_corrupted = mo.get_elements_corrupted_files(df_stier_csvfiler[navn_csv])
-        # mo.plot_differences(paths_differences, parameter_navn_interpret0, elements_files_corrupted, diff_navn,
-        #                     fysiske_enheter)
-        # indices_selection_true, indices_selection_augm = mo.get_indices_paths_selection(list_of_lists_attributes,
-        #                                                                                 attribute_type,
-        #                                                                                 df_stier_csvfiler[navn_csv],
-        #                                                                                 elements_files_corrupted)
-        list_category, list_indices = mo.get_category(list_of_lists_attributes, attribute_type,
-                                                      twolines_inside, elements_files_corrupted,
-                                                      exluded_files)
-        # mo.plot_difference_selection(paths_differences, parameter_navn_interpret0, diff_navn, fysiske_enheter,
-        #                              list_category, list_indices, attribute_type, color_map)
-        mo.plot_value_selection(path_value, parameter_navn_interpret0, diff_navn, valnavn, fysiske_enheter,
-                                list_category, list_indices, attribute_type, color_map)
-
-    return

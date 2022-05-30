@@ -4,6 +4,8 @@ from Automatisering_RS2.source.alter_geometry import geometry_operations as go
 import plan_experiment as pe
 import experiment_actions as ea
 import Automatisering_RS2.source.sporing_mus.mouse_tracker as mt
+import time
+from datetime import timedelta
 
 """
 
@@ -13,7 +15,7 @@ ha en løkke som går i gjennom hver fil og klargjør for analyse
 eventuelt lukke alt til slutt
 
 """
-
+time_start = time.time()
 command = ''
 while True:
     try:
@@ -49,8 +51,6 @@ if command == 'j':
     # definerer hvilke attributter som endres
     tolerance = 0.001
     maxiter = 10000
-    number_of_angles = 7
-    number_of_od = 6
     list_change_fieldstress = [300, 500, 800, 1200]
     ant_parametere_interpret = 2
     parameter_navn_interpret = ['sigma 1:', 'total deformasjon:', 'end']
@@ -103,8 +103,7 @@ if command == 'j':
     list_valnavn = []
     list_valnavn_2lines += 7 * [valnavn_2lines]
     list_valnavn += 7 * [valnavn]
-    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\Users\Eirik\Documents\thesis\eksperimenter'
-                                                             r'\eksperimentTest'
+    liste_stier_PycharmProjects_automatisering = pd.read_csv(r'C:\temp\thesis\eksperimenter\mektighet_1'
                                                              r'\base_modeler\Pycharm_automatisering'
                                                              r'\liste_stier_PycharmProjects_automatisering.txt',
                                                              sep=';')
@@ -212,7 +211,7 @@ if command == 'j':
     # time, benyttes under autogui-prosessene for å definere hvor lang tid pcen har for å utføre en komando.
     # Blir viktig for å sørge for at et steg er ferdig før neste begynner. Hvis det skjer så crasher srciptet. Valg av
     # intervall blir funnet på bakgrunn av testing.
-    time = [0, 0.7, 1, 2, 5]
+    time0 = [0, 0.7, 1, 2, 5]
     """her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"""
     list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
         ea.execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary, overdekninger,
@@ -232,19 +231,19 @@ if command == 'j':
         list_of_df_2lines_info[8]
 
     """her lages diskretisering og mesh til alle modellene"""
-    ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time,
-    files_to_skip)
+    ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time0,
+                   files_to_skip)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 
     så fortsetter scriptet. Det er viktig å sørge for at rs2_compute allerede finner den mappen som filene ligger i.
     """
-    ea.calculate(path_rs2_compute, time, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, sti_tolerance_too_high,
+    ea.calculate(path_rs2_compute, time0, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, sti_tolerance_too_high,
                  tolerance, number_of_files)
     # mo.get_files_unsuc_tolerance(sti_til_mappe_for_arbeidsfiler, df_filnavn_rs2, sti_tolerance_too_high, tolerance)
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
     ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
-                  df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time,
+                  df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time0,
                   list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av excel"""
@@ -257,4 +256,8 @@ if command == 'j':
                                                                              sti_values_toplot_2lines,
                                                                              list_valnavn, sti_values_toplot,
                                                                              list_0lines_inside, list_1line_inside,
-                                                                             parameters_varied, true_lengths)
+                                                                             parameters_varied)
+time_end = time.time()
+time_diff_in_seconds = time_end-time_start
+time_diff_in_hours_min_sec = timedelta(seconds=time_diff_in_seconds)
+print("Tid brukt for kjøring av script:     {}. (#hours#:#minutes#:#seconds#)".format(time_diff_in_hours_min_sec))

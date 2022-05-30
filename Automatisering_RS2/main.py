@@ -62,7 +62,7 @@ if command == 'j':
                                      4, [45, 52.5, 60, 67.5, 75, 82.5, 90], 0, \
                                      [0, 0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 4.5, 5, 5.5, 5.75, 6, 7, 8, 9, 10, 11, 13, 15,
                                       20]
-    true_lengths = [x + mektighet_attributes/2 for i, x in enumerate(x_attributes) if i > 0]
+    true_lengths = [x + mektighet_attributes/2 if i > 0 else x for i, x in enumerate(x_attributes)]
     # NB!!!!!! x_attributes er her missvisende, men er valgt å forbli slik pga liten tid. Det er funnet ut at det
     # er mer hensiktsmessig å nytte minste avstand fra sone til tunnelsenter. y blir altså ikke brukt og x er egt
     # denne nye normerte avstand, som i ea.set_model_csv_attributes_batch blir endret til rett x-verdi.
@@ -96,7 +96,7 @@ if command == 'j':
                       'quad_low - sigma1, low', 'quad_low - sigma1, high', 'quad_low - sigma 1, inbetween',
                       'quad_low - totaldeformasjon, low', 'quad_low - totaldeformasjon, high',
                       'quad_low - totaldeformasjon, inbetween']
-    valnavn = ['file_name', 'od', 'v', 'x', 'sigma 1, max', 'totaldeformasjon, max',
+    valnavn = ['file_name', 'true_lengths', 'od', 'v', 'x', 'sigma 1, max', 'totaldeformasjon, max',
                'quad_high - sigma 1, inbetween', 'quad_high - totaldeformasjon, inbetween',
                'quad_low - sigma 1, inbetween', 'quad_low - totaldeformasjon, inbetween']
     list_valnavn_2lines = []
@@ -109,9 +109,9 @@ if command == 'j':
                                                              sep=';')
     main_stringobjects = pd.read_csv(liste_stier_PycharmProjects_automatisering['object'][0], sep=';')
 
-    list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
-        list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
-        [], [], [], [], [], [], [], [], []
+    # list_0lines_inside, list_1line_inside, list_2lines_inside, list_iternumber_0, list_iternumber_1, \
+    #     list_iternumber_2, list_excluded_files_2linescalc, list_points_to_check, ll_inner_points = \
+    #     [], [], [], [], [], [], [], [], []
 
     """ Her er det mulig å gjøre endringer på koordinatene lagret i liste_datamus_koordinater"""
     # mt.mouse_tracker(liste_stier_PycharmProjects_automatisering['object'][1])
@@ -195,11 +195,11 @@ if command == 'j':
     df_filnavn_rs2, df_filnavn_csv = mo.make_file_name(path_csv_parameter_verdier_fil)
 
     # her stilles spm om det vil startes et nytt eksperiment, hvis ja så blir det dannet nye filer og de gamle forkastes
-    change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
-                                 sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier,
-                                 path_csv_parameter_verdier_mappe, ytre_grenser_utstrekning)
-    if change[0]:
-        df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
+    # change = mo.get_new_paths_df(sti_til_mappe_for_arbeidsfiler, sti_til_mapper_endelige_filer, sti_kildefil_rs2,
+    #                              sti_kildefil_csv, sti_csv_gamle_rs2stier, sti_csv_gamle_csvstier,
+    #                              path_csv_parameter_verdier_mappe, ytre_grenser_utstrekning)
+    # if change[0]:
+    #     df_stier_rs2filer, df_stier_csvfiler = change[1], change[2]
 
     # df_endrede_attributter_rs2filer er en df som inneholder alle de endringer som hver fil skal igjennom.
     # Den har samme struktur som df_stier_rs2filer, men hver celle inneholder en pandas-'Series' der
@@ -213,17 +213,17 @@ if command == 'j':
     # intervall blir funnet på bakgrunn av testing.
     time0 = [0, 0.7, 1, 2, 5]
     """her lages geometriene til rs2-modellene, evt så hentes de sentrale punktene ut"""
-    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-        ea.execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary, overdekninger,
-                                     list_change_fieldstress,
-                                     mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
-                                     df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
-                                     list_0lines_inside, list_1line_inside, list_2lines_inside,
-                                     list_excluded_files_2linescalc, list_points_to_check,
-                                     sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
-                                     list_iternumber_2, ll_inner_points)
     # list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
-    #     go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
+    #     ea.execute_model_alteration0(ytre_grenser_utstrekning, n_points_tunnel_boundary, overdekninger,
+    #                                  list_change_fieldstress,
+    #                                  mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer,
+    #                                  df_stier_csvfiler, df_endrede_attributter_rs2filer, list_which_material,
+    #                                  list_0lines_inside, list_1line_inside, list_2lines_inside,
+    #                                  list_excluded_files_2linescalc, list_points_to_check,
+    #                                  sti_list_variables_2lines_calculations, list_iternumber_0, list_iternumber_1,
+    #                                  list_iternumber_2, ll_inner_points)
+    list_of_df_2lines_info, colnames_of_dfs_2lines_info = \
+        go.get_parameters_2lines_inside(sti_list_variables_2lines_calculations)
     list_0lines_inside, list_1line_inside, list_2lines_inside, list_excluded_files_2linescalc, list_points_to_check, \
         list_iternumber_0, list_iternumber_1, list_iternumber_2, ll_inner_points = \
         list_of_df_2lines_info[0], list_of_df_2lines_info[1], list_of_df_2lines_info[2], list_of_df_2lines_info[3], \
@@ -231,20 +231,20 @@ if command == 'j':
         list_of_df_2lines_info[8]
 
     """her lages diskretisering og mesh til alle modellene"""
-    ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time0,
-                   files_to_skip)
+    # ea.create_mesh(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2, time0,
+    #                files_to_skip)
 
     """
     her kjøres alle kalkulasjonene, med en dynamisk while-løkke slik at når alle kalkulasjonene er ferdig, 
     så fortsetter scriptet. Det er viktig å sørge for at rs2_compute allerede finner den mappen som filene ligger i.
     """
-    ea.calculate(path_rs2_compute, time0, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, sti_tolerance_too_high,
-                 tolerance, number_of_files)
+    # ea.calculate(path_rs2_compute, time0, df_filnavn_rs2, sti_til_mappe_for_arbeidsfiler, sti_tolerance_too_high,
+    #              tolerance, number_of_files)
     # mo.get_files_unsuc_tolerance(sti_til_mappe_for_arbeidsfiler, df_filnavn_rs2, sti_tolerance_too_high, tolerance)
     """åpner interpret, der alle resultater som skal benyttes hentes ut og lagres i csv-format"""
-    ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
-                  df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time0,
-                  list_excluded_files_2linescalc, ll_inner_points)
+    # ea.store_data(mappenavn_til_rs2, mappenavn_til_csv, df_stier_rs2filer, df_stier_csvfiler, path_rs2_interpret,
+    #               df_koordinater_mus, navn_kol_df_koord_mus, ant_parametere_interpret, parameter_navn_interpret, time0,
+    #               list_excluded_files_2linescalc, ll_inner_points)
 
     """her kalkuleres differensene til de mest sentrale punktene som skal presenteres ved bruk av excel"""
     list_paths_values_2lines, list_paths_values = ea.execute_data_processing(parameter_navn_interpret,
@@ -256,7 +256,7 @@ if command == 'j':
                                                                              sti_values_toplot_2lines,
                                                                              list_valnavn, sti_values_toplot,
                                                                              list_0lines_inside, list_1line_inside,
-                                                                             parameters_varied)
+                                                                             parameters_varied, true_lengths)
 time_end = time.time()
 time_diff_in_seconds = time_end-time_start
 time_diff_in_hours_min_sec = timedelta(seconds=time_diff_in_seconds)

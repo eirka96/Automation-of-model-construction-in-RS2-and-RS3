@@ -986,10 +986,10 @@ def create_values_csv(foldername_csv, list_values_2line, list_values, parametern
     for navn, values, varied_param_values_2lines, true_len in zip(list_navn_2lines, list_values_2line,
                                                                   list_varied_param_values_2lines, list_true_lengths):
         # d = list(map(list, zip(*differences)))  # transposes the list of lists
-        list_to_df_2lines.append([navn] + true_len + varied_param_values_2lines + values)
+        list_to_df_2lines.append([navn] + [true_len] + varied_param_values_2lines + values)
     for navn, values, varied_param_values, true_len in zip(list_navn_allines, list_values, list_varied_param_values,
                                                  list_true_lengths):
-        list_to_df.append([navn] + true_len + varied_param_values + values)
+        list_to_df.append([navn] + [true_len] + varied_param_values + values)
     df_values_2lines = pd.DataFrame(list_to_df_2lines, columns=val_navn_2lines)
     df_values_2lines.to_csv(path_or_buf=path_2lines, sep=';', mode='w', index=False)
     df_values_2lines.to_csv(path_or_buf=sti_values_toplot_2lines, sep=';', mode='a', index=False)

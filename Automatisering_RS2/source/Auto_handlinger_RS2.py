@@ -138,8 +138,9 @@ def handlinger_kalkulasjon(number_of_files, time=None):
     pag.press('down', presses=num_first_batch)
     pag.keyUp('shiftleft')
     pag.keyUp('shiftright')
+    sleep(5)
     pag.press('enter', interval=time[1])
-    sleep(10)
+    sleep(60)
     pag.press('enter', interval=time[3])
     pag.press('tab', presses=9, interval=time[1])
     pag.press('down', presses=num_first_batch)
@@ -148,10 +149,10 @@ def handlinger_kalkulasjon(number_of_files, time=None):
     pag.press('down', presses=num_second_batch)
     pag.keyUp('shiftleft')
     pag.keyUp('shiftright')
-    sleep(2)
+    sleep(5)
     pag.press('enter', interval=time[1])
     # kjøre kalkulasjon
-    sleep(10)
+    sleep(60)
     pag.press('tab', presses=2, interval=time[2])
     pag.press('space', interval=time[2])
     # sjekke prosessor bruken, så lenge den er over en grense så venter resten av scriptet med å kjøre

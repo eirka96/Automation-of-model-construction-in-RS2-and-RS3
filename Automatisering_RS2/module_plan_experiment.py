@@ -11,7 +11,6 @@ This script is called by the main file
 
 """
 
-
 """
 This function gets the range of each parameter. If the range is greater than two it is dynamic, is it one it is static,
 and is it zero it is not included. This is the function that is doing the detection work.
@@ -80,7 +79,9 @@ def get_range_changing_attributes(rock_mass_material, weakness_zone_material, st
         else:
             iter_list[idx] = np.arange(iter_object[0], iter_object[1], iter_object[2]).tolist()
     iter_list.insert(3, overburden)
-    return iter_list[0], iter_list[1], iter_list[2], iter_list[3], iter_list[4], iter_list[5], iter_list[6], iter_list[7]
+
+    return iter_list[0], iter_list[1], iter_list[2], iter_list[3], iter_list[4], iter_list[5], iter_list[6], \
+        iter_list[7]
 
 
 """
@@ -173,7 +174,7 @@ def get_x_distance(normalized_distance_list, zone_angle, mektighet):
     ai = AddIt(normalized_distance_list, mektighet, sentinel)
     x_distance_list = []
     for i in iter(ai, sentinel):
-        x_distance_list.append(round(i/np.sin(zone_angle), 2))
+        x_distance_list.append(round(i / np.sin(zone_angle), 2))
     return x_distance_list
 
 
@@ -206,4 +207,3 @@ def set_model_csv_attributes_batch(path_csv_attributes, rock_mass_material, weak
         writer_object.writerows(list_data)
         file.close()
     return number_of_files
-
